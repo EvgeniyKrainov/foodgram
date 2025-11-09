@@ -1,63 +1,62 @@
 from django.contrib import admin
-from .models import (
-    Tag, Ingredient, Recipe, RecipeIngredient,
-    Favorite, ShoppingCart, Subscription
-)
+
+from . import models
 
 
-class RecipeIngredientInline(admin.TabularInline):
-    model = RecipeIngredient
-    extra = 1
-    min_num = 1
-
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'color', 'slug')
-    list_editable = ('name', 'color', 'slug')
-    search_fields = ('name', 'slug')
-    list_filter = ('name',)
-
-
-@admin.register(Ingredient)
+@admin.register(models.Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'measurement_unit')
-    list_editable = ('name', 'measurement_unit')
-    search_fields = ('name',)
-    list_filter = ('name',)
+    list_display = ("pk", "name", "measurement_unit")
+    list_filter = ("name",)
+    search_fields = ("name",)
 
 
-@admin.register(Recipe)
+@admin.register(models.Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ("pk", "name", "color", "slug")
+    list_editable = ("name", "color", "slug")
+    empty_value_display = "-пусто-"
+
+
+@admin.register(models.Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'name', 'author', 'cooking_time', 
-        'pub_date', 'favorites_count'
+        "pk",
+        "name",
+        "author",
+        "in_favorites",
+        "image",
+        "cooking_time",
+        "text",
     )
-    list_filter = ('author', 'name', 'tags')
-    search_fields = ('name', 'author__username')
-    inlines = [RecipeIngredientInline]
-    
-    def favorites_count(self, obj):
-        return obj.favorites.count()
-    favorites_count.short_description = 'В избранном'
+    list_editable = ("name", "cooking_time", "text", "image", "author")
+    readonly_fields = ("in_favorites",)
+    list_filter = ("name", "author", "tags")
+    empty_value_display = "-пусто-"
+
+    @admin.display(description="В избранном")
+    def in_favorites(self, obj):
+        return obj.favorite_recipe.count()
 
 
-@admin.register(Favorite)
+@admin.register(models.Recipe_ingredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ("pk", "recipe", "ingredient", "amount")
+    list_editable = ("recipe", "ingredient", "amount")
+
+
+@admin.register(models.Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'recipe')
-    list_filter = ('user', 'recipe')
-    search_fields = ('user__username', 'recipe__name')
+    list_display = ("pk",
+                    "user",
+                    "recipe")
+    list_editable = ("user",
+                     "recipe")
 
 
-@admin.register(ShoppingCart)
+@admin.register(models.Shopping_cart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'recipe')
-    list_filter = ('user', 'recipe')
-    search_fields = ('user__username', 'recipe__name')
-
-
-@admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'author')
-    list_filter = ('user', 'author')
-    search_fields = ('user__username', 'author__username')
+    list_display = ("pk",
+                    "user",
+                    "recipe")
+    list_editable = ("user",
+                     "recipe")

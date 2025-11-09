@@ -24,8 +24,6 @@ services:
     depends_on:
       - db
     env_file: .env
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings
 
   frontend:
     build:
@@ -38,7 +36,7 @@ services:
         cp -rf /usr/share/nginx/html/* /app/static/
       "
     volumes:
-      - static:/var/html/static/
+      - static:/app/static/
     restart: "no"
 
   nginx:
