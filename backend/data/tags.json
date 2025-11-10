@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Завтрак",
+    "color": "#FF6B35", 
+    "slug": "breakfast"
+  },
+  {
+    "name": "Обед",
+    "color": "#4CB944",
+    "slug": "lunch"
+  },
+  {
+    "name": "Ужин", 
+    "color": "#2A7DE1",
+    "slug": "dinner"
+  },
+  {
+    "name": "Десерт",
+    "color": "#E63946",
+    "slug": "dessert"
+  },
+  {
+    "name": "Выпечка",
+    "color": "#F4A261",
+    "slug": "baking"
+  },
+  {
+    "name": "Салат",
+    "color": "#2A9D8F",
+    "slug": "salad"
+  },
+  {
+    "name": "Супы",
+    "color": "#E9C46A", 
+    "slug": "soup"
+  },
+  {
+    "name": "Напитки",
+    "color": "#8ECAE6",
+    "slug": "drinks"
+  }
+]

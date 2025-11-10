@@ -34,8 +34,11 @@ services:
     container_name: foodgram_frontend
     command: >
       sh -c "
-        mkdir -p /app/static &&
-        cp -rf /usr/share/nginx/html/* /app/static/
+        mkdir -p /var/html/static &&
+        cp -rf /usr/share/nginx/html/* /var/html/static/ &&
+        chown -R 101:101 /var/html/static/ &&  # nginx user UID:GID
+        chmod -R 755 /var/html/static/ &&
+        ls -la /var/html/static/
       "
     volumes:
       - static:/var/html/static/
