@@ -69,8 +69,8 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                "[!] Успешно загружено: " +
-                f"{Ingredient.objects.count()} ингредиентов, " +
+                "[!] Успешно загружено: "
+                f"{Ingredient.objects.count()} ингредиентов, "
                 f"{tags_count} тегов"
             )
         )

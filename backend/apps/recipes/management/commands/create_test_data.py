@@ -27,7 +27,8 @@ class Command(BaseCommand):
             )
 
         # Проверяем существует ли таблица Recipe_ingredient
-        table_exists = 'recipes_recipe_ingredient' in connection.introspection.table_names()
+        table_exists = ('recipes_recipe_ingredient'
+                        in connection.introspection.table_names())
 
         if not table_exists:
             self.stdout.write(
@@ -129,12 +130,12 @@ class Command(BaseCommand):
 
             self.stdout.write(f'✅ Создан рецепт: {recipe.name}')
         else:
-            self.stdout.write(f'ℹ️ Рецепт уже существует: Тестовый рецепт')
+            self.stdout.write('ℹ️ Рецепт уже существует: Тестовый рецепт')
 
         self.stdout.write(
             self.style.SUCCESS('🎉 Тестовые данные успешно созданы')
         )
-        self.stdout.write(f'📊 Статистика:')
+        self.stdout.write('📊 Статистика:')
         self.stdout.write(f'   👥 Пользователей: {User.objects.count()}')
         self.stdout.write(f'   🥗 Ингредиентов: {Ingredient.objects.count()}')
         self.stdout.write(f'   🏷️ Тегов: {Tag.objects.count()}')
