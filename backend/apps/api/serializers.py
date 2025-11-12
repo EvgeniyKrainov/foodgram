@@ -1,5 +1,6 @@
-from apps.recipes.models import (Favorite, Ingredient, Recipe,
-                                 RecipeIngredient, Shopping_cart, Tag)
+from apps.recipes.models import (
+    Favorite, Ingredient, Recipe, RecipeIngredient, Shopping_cart, Tag
+)
 from apps.users.models import Subscribe, User
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions as django_exceptions
@@ -14,21 +15,15 @@ class UserReadSerializer(UserSerializer):
 
     is_subscribed = serializers.SerializerMethodField()
 
-
     class Meta:
         model = User
-        fields = ("email",
-                  "id",
-                  "username",
-                  "first_name",
-                  "last_name",
-                  "is_subscribed")
+        fields = (
+            "email", "id", "username", "first_name", "last_name", "is_subscribed"
+        )
 
     def get_is_subscribed(self, obj):
-        if (
-            self.context.get("request")
-            and not self.context["request"].user.is_anonymous
-        ):
+        if (self.context.get("request")
+                and not self.context["request"].user.is_anonymous):
             return Subscribe.objects.filter(
                 user=self.context["request"].user, author=obj
             ).exists()
@@ -40,12 +35,9 @@ class UserCreateSerializer(UserCreateSerializer):
 
     class Meta:
         model = User
-        fields = ("email",
-                  "id",
-                  "username",
-                  "first_name",
-                  "last_name",
-                  "password")
+        fields = (
+            "email", "id", "username", "first_name", "last_name", "password"
+        )
         extra_kwargs = {
             "first_name": {"required": True, "allow_blank": False},
             "last_name": {"required": True, "allow_blank": False},
@@ -71,7 +63,9 @@ class SetPasswordSerializer(serializers.Serializer):
         try:
             validate_password(obj["new_password"])
         except django_exceptions.ValidationError as e:
-            raise serializers.ValidationError({"new_password": list(e.messages)})
+            raise serializers.ValidationError(
+                {"new_password": list(e.messages)}
+            )
         return super().validate(obj)
 
     def update(self, instance, validated_data):
@@ -79,7 +73,7 @@ class SetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"current_password": "Неправильный пароль."}
             )
-        if validated_data["current_password"]== validated_data["new_password"]:
+        if validated_data["current_password"] == validated_data["new_password"]:
             raise serializers.ValidationError(
                 {"new_password": "Новый пароль должен отличаться от текущего."}
             )
@@ -202,7 +196,8 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source="ingredient.id")
     name = serializers.ReadOnlyField(source="ingredient.name")
     measurement_unit = serializers.ReadOnlyField(
-        source="ingredient.measurement_unit")
+        source="ingredient.measurement_unit"
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -266,8 +261,9 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 class RecipeCreateSerializer(serializers.ModelSerializer):
     """[POST, PATCH, DELETE] Создание, изменение и удаление рецепта."""
 
-    tags = serializers.PrimaryKeyRelatedField(many=True,
-                                              queryset=Tag.objects.all())
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Tag.objects.all()
+    )
     author = UserReadSerializer(read_only=True)
     id = serializers.ReadOnlyField()
     ingredients = RecipeIngredientCreateSerializer(many=True)
@@ -298,18 +294,20 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         for field in ["name", "text", "cooking_time"]:
             if not obj.get(field):
                 raise serializers.ValidationError(
-                    f"{field} - Обязательное поле.")
+                    f"{field} - Обязательное поле."
+                )
         if not obj.get("tags"):
-            raise serializers.ValidationError(
-                "Нужно указать минимум 1 тег.")
+            raise serializers.ValidationError("Нужно указать минимум 1 тег.")
         if not obj.get("ingredients"):
             raise serializers.ValidationError(
-                "Нужно указать минимум 1 ингредиент.")
+                "Нужно указать минимум 1 ингредиент."
+            )
         inrgedient_id_list = [item["id"] for item in obj.get("ingredients")]
         unique_ingredient_id_list = set(inrgedient_id_list)
         if len(inrgedient_id_list) != len(unique_ingredient_id_list):
             raise serializers.ValidationError(
-                "Ингредиенты должны быть уникальны.")
+                "Ингредиенты должны быть уникальны."
+            )
         return obj
 
     @transaction.atomic

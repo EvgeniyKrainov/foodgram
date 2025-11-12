@@ -1,13 +1,12 @@
-from apps.users.models import User
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
+from apps.users.models import User
+
 
 class Ingredient(models.Model):
-    name = models.CharField("Название",
-                            max_length=200)
-    measurement_unit = models.CharField("Единица измерения",
-                                        max_length=200)
+    name = models.CharField("Название", max_length=200)
+    measurement_unit = models.CharField("Единица измерения", max_length=200)
 
     class Meta:
         ordering = ["name"]
@@ -19,8 +18,7 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField("Название",
-                            max_length=200)
+    name = models.CharField("Название", max_length=200)
     color = models.CharField(
         "Цвет в HEX",
         max_length=7,
@@ -32,10 +30,9 @@ class Tag(models.Model):
             )
         ],
     )
-    slug = models.SlugField("Уникальный слаг",
-                            max_length=200,
-                            unique=True,
-                            null=True)
+    slug = models.SlugField(
+        "Уникальный слаг", max_length=200, unique=True, null=True
+    )
 
     class Meta:
         verbose_name = "Тег"
@@ -54,7 +51,8 @@ class Recipe(models.Model):
     image = models.ImageField("Изображение", upload_to="recipes/", blank=True)
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        User,
+        on_delete=models.CASCADE,
         related_name="recipes",
         verbose_name="Автор"
     )
@@ -77,7 +75,8 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE,
+        Recipe,
+        on_delete=models.CASCADE,
         related_name="recipes",
         verbose_name="Рецепт"
     )
@@ -87,8 +86,9 @@ class RecipeIngredient(models.Model):
         related_name="ingredients",
         verbose_name="Ингредиент",
     )
-    amount = models.IntegerField("Количество",
-                                 validators=[MinValueValidator(1)])
+    amount = models.IntegerField(
+        "Количество", validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         verbose_name = "Ингредиенты в рецепте"
@@ -126,8 +126,9 @@ class Favorite(models.Model):
         verbose_name = "Избранное"
         verbose_name_plural = "Избранное"
         constraints = [
-            models.UniqueConstraint(fields=["user", "recipe"],
-                                    name="unique_favorite")
+            models.UniqueConstraint(
+                fields=["user", "recipe"], name="unique_favorite"
+            )
         ]
 
     def __str__(self):
