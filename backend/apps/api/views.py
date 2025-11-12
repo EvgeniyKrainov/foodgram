@@ -1,3 +1,6 @@
+from apps.recipes.models import (Favorite, Ingredient, Recipe, Shopping_cart,
+                                 Tag)
+from config.settings import FILE_NAME
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -7,19 +10,16 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from apps.recipes.models import Favorite, Ingredient, Recipe, Shopping_cart, Tag
 from apps.users.models import Subscribe, User
-from config.settings import FILE_NAME
 
 from .filters import RecipeFilter
 from .pagination import CustomPaginator
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (
-    IngredientSerializer, RecipeCreateSerializer, RecipeReadSerializer,
-    RecipeSerializer, SetPasswordSerializer, SubscribeAuthorSerializer,
-    SubscriptionsSerializer, TagSerializer, UserCreateSerializer,
-    UserReadSerializer
-)
+from .serializers import (IngredientSerializer, RecipeCreateSerializer,
+                          RecipeReadSerializer, RecipeSerializer,
+                          SetPasswordSerializer, SubscribeAuthorSerializer,
+                          SubscriptionsSerializer, TagSerializer,
+                          UserCreateSerializer, UserReadSerializer)
 
 
 class UserViewSet(
