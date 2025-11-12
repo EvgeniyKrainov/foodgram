@@ -7,7 +7,7 @@ from apps.recipes.models import (
     Favorite,
     Ingredient,
     Recipe,
-    Recipe_ingredient,
+    RecipeIngredient,
     Shopping_cart,
     Tag,
 )
@@ -175,11 +175,6 @@ class SubscribeAuthorSerializer(serializers.ModelSerializer):
         return obj.recipes.count()
 
 
-# -----------------------------------------------------------------------------
-#                            Приложение recipes
-# -----------------------------------------------------------------------------
-
-
 class IngredientSerializer(serializers.ModelSerializer):
     """[GET] Список ингредиентов."""
 
@@ -204,7 +199,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     measurement_unit = serializers.ReadOnlyField(source="ingredient.measurement_unit")
 
     class Meta:
-        model = Recipe_ingredient
+        model = RecipeIngredient
         fields = ("id", "name", "measurement_unit", "amount")
 
 
@@ -258,7 +253,7 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
 
     class Meta:
-        model = Recipe_ingredient
+        model = RecipeIngredient
         fields = ("id", "amount")
 
 
@@ -309,9 +304,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def tags_and_ingredients_set(self, recipe, tags, ingredients):
         recipe.tags.set(tags)
-        Recipe_ingredient.objects.bulk_create(
+        RecipeIngredient.objects.bulk_create(
             [
-                Recipe_ingredient(
+                RecipeIngredient(
                     recipe=recipe,
                     ingredient=Ingredient.objects.get(pk=ingredient["id"]),
                     amount=ingredient["amount"],
@@ -340,7 +335,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
         tags = validated_data.pop("tags")
         ingredients = validated_data.pop("ingredients")
-        Recipe_ingredient.objects.filter(
+        RecipeIngredient.objects.filter(
             recipe=instance, ingredient__in=instance.ingredients.all()
         ).delete()
         self.tags_and_ingredients_set(instance, tags, ingredients)

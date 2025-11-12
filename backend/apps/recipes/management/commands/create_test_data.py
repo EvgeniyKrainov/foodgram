@@ -79,10 +79,10 @@ class Command(BaseCommand):
             # Добавляем ингредиенты к рецепту (только если таблица существует)
             if table_exists:
                 try:
-                    from apps.recipes.models import Recipe_ingredient
+                    from apps.recipes.models import RecipeIngredient
                     ingredients = Ingredient.objects.all()[:3]
                     for i, ingredient in enumerate(ingredients):
-                        Recipe_ingredient.objects.create(
+                        RecipeIngredient.objects.create(
                             recipe=recipe,
                             ingredient=ingredient,
                             amount=100 + i * 50

@@ -55,7 +55,7 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        through="Recipe_ingredient",
+        through="RecipeIngredient",
         through_fields=("recipe", "ingredient"),
         verbose_name="Ингредиенты",
     )
@@ -70,7 +70,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class Recipe_ingredient(models.Model):
+class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name="recipes", verbose_name="Рецепт"
     )

@@ -16,11 +16,11 @@ def ingredient_create(row):
 def load_tags():
     """Загрузка тегов из JSON файла"""
     tags_path = os.path.join(settings.BASE_DIR, "data", "tags.json")
-    
+
     try:
         with open(tags_path, "r", encoding="utf-8") as file:
             tags_data = json.load(file)
-        
+
         created_count = 0
         for tag_data in tags_data:
             tag, created = Tag.objects.get_or_create(
@@ -31,9 +31,9 @@ def load_tags():
             if created:
                 created_count += 1
                 print(f'✅ Создан тег: {tag.name}')
-        
+
         return created_count
-        
+
     except FileNotFoundError:
         print("⚠️ Файл tags.json не найден")
         return 0
@@ -61,11 +61,11 @@ class Command(BaseCommand):
                 bar.next()
                 ingredient_create(row)
             bar.finish()
-        
+
         # Загрузка тегов
         self.stdout.write("🏷️ Загрузка тегов...")
         tags_count = load_tags()
-        
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"[!] Успешно загружено: {Ingredient.objects.count()} ингредиентов, {tags_count} тегов"

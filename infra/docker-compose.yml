@@ -1,7 +1,8 @@
 volumes:
   pg_data:
-  static:
-  media:
+  static_volume:
+  media_volume:
+  frontend_volume:
 
 services:
   db:
@@ -11,7 +12,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data/
     env_file: .env
-  
+
   backend:
     build:
       context: ../backend
@@ -19,10 +20,8 @@ services:
     container_name: foodgram_backend
     restart: always
     volumes:
-      - static:/app/static/
-      - media:/app/media/
-      #- ./load_data.py:/app/load_data.py:ro
-      #- ./load_data.py:/app/create_test_data.py:ro
+      - static_volume:/app/static/
+      - media_volume:/app/media/
     depends_on:
       - db
     env_file: .env
@@ -36,14 +35,14 @@ services:
     container_name: foodgram_frontend
     command: >
       sh -c "
-        mkdir -p /var/html/static &&
-        cp -rf /usr/share/nginx/html/* /var/html/static/ &&
-        chown -R 101:101 /var/html/static/ &&  # nginx user UID:GID
-        chmod -R 755 /var/html/static/ &&
-        ls -la /var/html/static/
+        cp -rf /usr/share/nginx/html/* /var/html/frontend/ &&
+        chown -R 101:101 /var/html/frontend/ &&
+        chmod -R 755 /var/html/frontend/ &&
+        echo 'Frontend structure:' &&
+        find /var/html/frontend/ -type f -name '*.js' -o -name '*.css' | head -10
       "
     volumes:
-      - static:/var/html/static/
+      - frontend_volume:/var/html/frontend/
     restart: "no"
 
   nginx:
@@ -54,8 +53,9 @@ services:
     ports:
       - "85:80"
     volumes:
-      - static:/var/html/static/
-      - media:/var/html/media/
+      - static_volume:/var/html/static/
+      - media_volume:/var/html/media/
+      - frontend_volume:/var/html/frontend/
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - backend

@@ -6,7 +6,7 @@ from apps.recipes.models import (
     Favorite,
     Ingredient,
     Recipe,
-    Recipe_ingredient,
+    RecipeIngredient,
     Shopping_cart,
     Tag,
 )
