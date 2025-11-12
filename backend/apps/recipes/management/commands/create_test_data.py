@@ -1,7 +1,7 @@
-from django.core.management.base import BaseCommand
+from apps.recipes.models import Ingredient, Recipe, Tag
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 from django.db import connection
-from apps.recipes.models import Tag, Recipe, Ingredient
 
 User = get_user_model()
 
@@ -15,24 +15,39 @@ class Command(BaseCommand):
         # ПРОПУСКАЕМ создание тегов - они уже существуют
         existing_tags = Tag.objects.all()
         if existing_tags.exists():
-            self.stdout.write(f'ℹ️  Используем существующие теги: {[tag.name for tag in existing_tags]}')
+            self.stdout.write(
+                f'ℹ️  Используем существующие теги: {[tag.name
+                                                      for tag in
+                                                      existing_tags]}')
         else:
             self.stdout.write(
-                self.style.WARNING('⚠️  Теги не найдены, но не создаем новые из-за конфликтов')
+                self.style.WARNING(
+                    '⚠️  Теги не найдены, но не создаем новые из-за конфликтов'
+                    )
             )
 
         # Проверяем существует ли таблица Recipe_ingredient
         table_exists = 'recipes_recipe_ingredient' in connection.introspection.table_names()
-        
+
         if not table_exists:
             self.stdout.write(
-                self.style.WARNING('⚠️  Таблица recipes_recipe_ingredient не существует. Пропускаем создание связей рецепт-ингредиент.')
+                self.style.WARNING(
+                    '⚠️  Таблица recipes_recipe_ingredient не существует.'
+                    'Пропускаем создание связей рецепт-ингредиент.')
             )
 
         # Создаем тестовых пользователей
         users_data = [
-            {'username': 'chef', 'email': 'chef@example.com', 'password': 'testpass123', 'first_name': 'Шеф', 'last_name': 'Поваров'},
-            {'username': 'baker', 'email': 'baker@example.com', 'password': 'testpass123', 'first_name': 'Пекарь', 'last_name': 'Булочкин'},
+            {'username': 'chef',
+             'email': 'chef@example.com',
+             'password': 'testpass123',
+             'first_name': 'Шеф',
+             'last_name': 'Поваров'},
+            {'username': 'baker',
+             'email': 'baker@example.com',
+             'password': 'testpass123',
+             'first_name': 'Пекарь',
+             'last_name': 'Булочкин'},
         ]
 
         for user_data in users_data:
@@ -49,7 +64,8 @@ class Command(BaseCommand):
                 user.save()
                 self.stdout.write(f'✅ Создан пользователь: {user.username}')
             else:
-                self.stdout.write(f'ℹ️  Пользователь уже существует: {user.username}')
+                self.stdout.write(
+                    f'ℹ️  Пользователь уже существует: {user.username}')
 
         # Создаем тестовый рецепт
         chef_user = User.objects.get(username='chef')
@@ -66,10 +82,13 @@ class Command(BaseCommand):
                 tags = Tag.objects.all()[:2]
                 if tags.exists():
                     recipe.tags.set(tags)
-                    self.stdout.write(f'✅ Добавлены теги к рецепту: {[tag.name for tag in tags]}')
+                    self.stdout.write(
+                        f'✅ Добавлены теги к рецепту: {[tag.name
+                                                        for tag in tags]}')
                 else:
                     self.stdout.write(
-                        self.style.WARNING('⚠️  Нет тегов для добавления к рецепту')
+                        self.style.WARNING(
+                            '⚠️  Нет тегов для добавления к рецепту')
                     )
             except Exception as e:
                 self.stdout.write(
@@ -87,19 +106,23 @@ class Command(BaseCommand):
                             ingredient=ingredient,
                             amount=100 + i * 50
                         )
-                    self.stdout.write(f'✅ Добавлены ингредиенты к рецепту: {len(ingredients)} шт.')
+                    self.stdout.write(
+                        f'✅ Добавлены ингредиенты к рецепту: {len(
+                                                            ingredients)} шт.')
                 except Exception as e:
                     self.stdout.write(
-                        self.style.ERROR(f'❌ Ошибка при добавлении ингредиентов: {e}')
+                        self.style.ERROR(
+                            f'❌ Ошибка при добавлении ингредиентов: {e}')
                     )
             else:
                 self.stdout.write(
-                    self.style.WARNING('⚠️  Ингредиенты не добавлены (проблема с таблицей)')
+                    self.style.WARNING(
+                        '⚠️  Ингредиенты не добавлены (проблема с таблицей)')
                 )
-    
+
             self.stdout.write(f'✅ Создан рецепт: {recipe.name}')
         else:
-            self.stdout.write(f'ℹ️  Рецепт уже существует: Тестовый рецепт')
+            self.stdout.write(f'ℹ️ Рецепт уже существует: Тестовый рецепт')
 
         self.stdout.write(
             self.style.SUCCESS('🎉 Тестовые данные успешно созданы')

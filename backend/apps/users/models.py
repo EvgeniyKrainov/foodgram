@@ -35,5 +35,6 @@ class Subscribe(models.Model):
         verbose_name = "Подписка на авторов"
         verbose_name_plural = "Подписки на авторов"
         constraints = [
-            models.UniqueConstraint(fields=["user", "author"], name="unique_subscribe")
+            models.UniqueConstraint(fields=["user", "author"],
+                                    name="unique_subscribe")
         ]

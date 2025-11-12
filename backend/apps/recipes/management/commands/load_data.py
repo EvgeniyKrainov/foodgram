@@ -2,11 +2,10 @@ import csv
 import json
 import os
 
+from apps.recipes.models import Ingredient, Tag
+from config import settings
 from django.core.management.base import BaseCommand
 from progress.bar import IncrementalBar
-from apps.recipes.models import Ingredient, Tag
-
-from config import settings
 
 
 def ingredient_create(row):
@@ -47,12 +46,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Загрузка ингредиентов
-        ingredients_path = os.path.join(settings.BASE_DIR, "data", "ingredients.csv")
-        
+        ingredients_path = os.path.join(settings.BASE_DIR,
+                                        "data",
+                                        "ingredients.csv")
+
         self.stdout.write("📦 Загрузка ингредиентов...")
         with open(ingredients_path, "r", encoding="utf-8") as file:
             row_count = sum(1 for row in file)
-        
+
         with open(ingredients_path, "r", encoding="utf-8") as file:
             reader = csv.reader(file)
             bar = IncrementalBar("ingredients.csv".ljust(17), max=row_count)
@@ -68,6 +69,8 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"[!] Успешно загружено: {Ingredient.objects.count()} ингредиентов, {tags_count} тегов"
+                "[!] Успешно загружено: " +
+                f"{Ingredient.objects.count()} ингредиентов, " +
+                f"{tags_count} тегов"
             )
         )
