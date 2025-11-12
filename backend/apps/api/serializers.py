@@ -1,13 +1,13 @@
-from apps.recipes.models import (
-    Favorite, Ingredient, Recipe, RecipeIngredient, Shopping_cart, Tag
-)
-from apps.users.models import Subscribe, User
+from apps.recipes.models import (Favorite, Ingredient, Recipe,
+                                 RecipeIngredient, Shopping_cart, Tag)
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions as django_exceptions
 from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
+
+from apps.users.models import Subscribe, User
 
 
 class UserReadSerializer(UserSerializer):
