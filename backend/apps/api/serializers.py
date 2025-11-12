@@ -82,8 +82,7 @@ class SetPasswordSerializer(serializers.Serializer):
                 {"current_password": "Неправильный пароль."}
             )
         if validated_data[
-                "current_password"
-                ] == validated_data["new_password"]:
+                "current_password"] == validated_data["new_password"]:
             raise serializers.ValidationError(
                 {"new_password": "Новый пароль должен отличаться от текущего."}
             )
