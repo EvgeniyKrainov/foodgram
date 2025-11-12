@@ -1,5 +1,6 @@
-from apps.recipes.models import (Favorite, Ingredient, Recipe, Shopping_cart,
-                                 Tag)
+from apps.recipes.models import (Favorite, Ingredient, Recipe,
+                                 RecipeIngredient, Shopping_cart, Tag)
+from apps.users.models import Subscribe, User
 from config.settings import FILE_NAME
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -9,8 +10,6 @@ from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
-from apps.users.models import Subscribe, User
 
 from .filters import RecipeFilter
 from .pagination import CustomPaginator
@@ -47,11 +46,9 @@ class UserViewSet(
         serializer = UserReadSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(
-        detail=False,
-        methods=["post"],
-        permission_classes=(IsAuthenticated,)
-    )
+    @action(detail=False,
+            methods=["post"],
+            permission_classes=(IsAuthenticated,))
     def set_password(self, request):
         serializer = SetPasswordSerializer(request.user, data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -66,6 +63,7 @@ class UserViewSet(
         permission_classes=(IsAuthenticated,),
         pagination_class=CustomPaginator,
     )
+
     def subscriptions(self, request):
         queryset = User.objects.filter(subscribing__user=request.user)
         page = self.paginate_queryset(queryset)
@@ -75,8 +73,7 @@ class UserViewSet(
         return self.get_paginated_response(serializer.data)
 
     @action(
-        detail=True,
-        methods=["post", "delete"],
+        detail=True, methods=["post", "delete"],
         permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, **kwargs):
@@ -91,14 +88,13 @@ class UserViewSet(
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == "DELETE":
-            get_object_or_404(
-                Subscribe, user=request.user, author=author
-            ).delete()
+            get_object_or_404(Subscribe,
+                              user=request.user,
+                              author=author).delete()
             return Response(
                 {"detail": "Успешная отписка"},
                 status=status.HTTP_204_NO_CONTENT
             )
-
 
 class IngredientViewSet(
     mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
@@ -146,22 +142,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe, data=request.data, context={"request": request}
             )
             serializer.is_valid(raise_exception=True)
-            if not Favorite.objects.filter(
-                user=request.user, recipe=recipe
-            ).exists():
+            if not Favorite.objects.filter(user=request.user,
+                                           recipe=recipe).exists():
                 Favorite.objects.create(user=request.user, recipe=recipe)
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED
-                )
+                return Response(serializer.data,
+                                status=status.HTTP_201_CREATED)
             return Response(
                 {"errors": "Рецепт уже в избранном."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if request.method == "DELETE":
-            get_object_or_404(
-                Favorite, user=request.user, recipe=recipe
-            ).delete()
+            get_object_or_404(Favorite, user=request.user,
+                              recipe=recipe).delete()
             return Response(
                 {"detail": "Рецепт удален из избранного."},
                 status=status.HTTP_204_NO_CONTENT,
@@ -185,33 +178,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 user=request.user, recipe=recipe
             ).exists():
                 Shopping_cart.objects.create(user=request.user, recipe=recipe)
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED
-                )
+                return Response(serializer.data,
+                                status=status.HTTP_201_CREATED)
             return Response(
                 {"errors": "Рецепт уже в списке."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if request.method == "DELETE":
-            get_object_or_404(
-                Shopping_cart, user=request.user, recipe=recipe
-            ).delete()
+            get_object_or_404(Shopping_cart, user=request.user,
+                              recipe=recipe).delete()
             return Response(
                 {"detail": "Рецепт успешно удален из покупок."},
                 status=status.HTTP_204_NO_CONTENT,
             )
 
-    @action(
-        detail=False,
-        methods=["get"],
-        permission_classes=(IsAuthenticated,)
-    )
+    @action(detail=False, methods=["get"], permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request, **kwargs):
         ingredients = (
-            Recipe.ingredients.through.objects.filter(
-                recipe__shopping_recipe__user=request.user
-            )
+            Recipe_ingredient.objects.filter(
+                recipe__shopping_recipe__user=request.user)
             .values("ingredient")
             .annotate(total_amount=Sum("amount"))
             .values_list(
@@ -221,12 +207,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         )
         file_list = []
-        for ingredient in ingredients:
+        [
             file_list.append("{} - {} {}.".format(*ingredient))
+            for ingredient in ingredients
+        ]
         file = HttpResponse(
             "Cписок покупок:\n" + "\n".join(file_list),
             content_type="text/plain"
         )
         file["Content-Disposition"] = f"attachment; filename={FILE_NAME}"
         return file
-isort
