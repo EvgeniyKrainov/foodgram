@@ -18,7 +18,12 @@ class UserReadSerializer(UserSerializer):
     class Meta:
         model = User
         fields = (
-            "email", "id", "username", "first_name", "last_name", "is_subscribed"
+            "email",
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed"
         )
 
     def get_is_subscribed(self, obj):
@@ -45,7 +50,10 @@ class UserCreateSerializer(UserCreateSerializer):
         }
 
     def validate(self, obj):
-        invalid_usernames = ["me", "set_password", "subscriptions", "subscribe"]
+        invalid_usernames = ["me",
+                             "set_password",
+                             "subscriptions",
+                             "subscribe"]
         if self.initial_data.get("username") in invalid_usernames:
             raise serializers.ValidationError(
                 {"username": "Вы не можете использовать этот username."}
@@ -73,7 +81,8 @@ class SetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"current_password": "Неправильный пароль."}
             )
-        if validated_data["current_password"] == validated_data["new_password"]:
+        if validated_data[
+            "current_password"] == validated_data["new_password"]:
             raise serializers.ValidationError(
                 {"new_password": "Новый пароль должен отличаться от текущего."}
             )
