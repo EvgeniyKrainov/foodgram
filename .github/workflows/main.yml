@@ -194,41 +194,48 @@ jobs:
           script: |
             cd foodgram
       
-            echo "=== Проверяем структуру проекта в контейнере ==="
-            sudo docker compose -f docker-compose.production.yml exec foodgram_backend ls -la /app/
+            echo "=== Исправляем команду запуска в docker-compose ==="
+            sed -i 's|command:.*|command: ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:9000"]|g' docker-compose.production.yml
       
-            echo "=== Исправляем команду запуска Gunicorn ==="
-            # Временно меняем команду запуска в docker-compose
-            sed -i 's|command:.*|command: gunicorn foodgram.wsgi:application --bind 0.0.0.0:9000|g' docker-compose.production.yml
-      
-            echo "=== Перезапускаем backend с исправленной командой ==="
+            echo "=== Проверяем изменения ==="
+            grep -A 2 "command:" docker-compose.production.yml
+            
+            echo "=== Перезапускаем backend ==="
             sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml up -d foodgram_backend
       
-            echo "=== Ждем перезапуска ==="
-            sleep 20
-      
-            echo "=== Проверяем логи после исправления ==="
+            echo "=== Ждем запуска ==="
+            sleep 15
+            
+            echo "=== Проверяем логи ==="
             sudo docker compose -f docker-compose.production.yml logs foodgram_backend --tail=20
-      
-            echo "=== Проверяем статус контейнеров ==="
-            sudo docker compose -f docker-compose.production.yml ps
-            echo ""
-            echo "=== Логи foodgram_backend ==="
-            sudo docker compose -f docker-compose.production.yml logs foodgram_backend --tail=50
-      
-            echo "=== Попытка выполнения миграций ==="
+            
+            echo "=== Если backend запустился, выполняем миграции ==="
             if sudo docker compose -f docker-compose.production.yml ps foodgram_backend | grep -q "Up"; then
-              echo "foodgram_backend запущен, выполняем миграции..."
+              echo "✅ Backend запущен, выполняем миграции..."
               sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py migrate
               sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py collectstatic --noinput
+              echo "=== Health check ==="
+              timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
             else
-              echo "foodgram_backend не запущен, проверяем причину..."
-              sudo docker compose -f docker-compose.production.yml logs foodgram_backend --tail=100
-              exit 1
+              echo "❌ Backend не запустился, проверяем альтернативный вариант..."
+              
+              echo "=== Запускаем backend с миграциями и gunicorn в одной команде ==="
+              sudo docker compose -f docker-compose.production.yml stop foodgram_backend
+              sudo docker compose -f docker-compose.production.yml rm -f foodgram_backend
+
+              sudo docker run -d \
+                --name foodgram_backend_fixed \
+                --network foodgram_default \
+                -v foodgram_static_volume:/app/static/ \
+                -v foodgram_media_volume:/app/media/ \
+                --env-file infra/.env \
+                ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest \
+                /bin/sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn foodgram.wsgi:application --bind 0.0.0.0:9000"
+              
+              sleep 10
+              echo "=== Проверяем новый контейнер ==="
+              sudo docker logs foodgram_backend_fixed --tail=20
             fi
-      
-            echo "=== Health check ==="
-            timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
   
   rollback_on_failure:
     runs-on: ubuntu-latest
