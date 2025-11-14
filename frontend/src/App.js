@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { Header, Footer, ProtectedRoute } from "./components";
 import api from "./api";
 import styles from "./styles.module.css";
+import { HelmetProvider } from 'react-helmet-async'
 
 import {
   // About,
@@ -205,137 +206,131 @@ function App() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   document.addEventListener('keydown', function(event) {
-  //     if (event.ctrlKey && event.shiftKey && event.key === 'z') {
-  //       alert('зиги - добар пас!');
-  //     }
-  //   });
-  // }, [])
-
   if (loggedIn === null) {
     return <div className={styles.loading}>Загрузка...</div>;
   }
 
   return (
-    <AuthContext.Provider value={loggedIn}>
-      <UserContext.Provider value={user}>
-        <div className="App">
-          <Header orders={orders} loggedIn={loggedIn} onSignOut={onSignOut} />
-          <Switch>
-            <Route
-              exact
-              path="/user/:id"
-              component={User}
-              updateOrders={updateOrders}
-            />
-            <ProtectedRoute
-              exact
-              path="/cart"
-              component={Cart}
-              orders={orders}
-              loggedIn={loggedIn}
-              updateOrders={updateOrders}
-            />
-            <ProtectedRoute
-              exact
-              path="/subscriptions"
-              component={Subscriptions}
-              loggedIn={loggedIn}
-            />
-
-            <ProtectedRoute
-              exact
-              path="/favorites"
-              component={Favorites}
-              loggedIn={loggedIn}
-              updateOrders={updateOrders}
-            />
-
-            <ProtectedRoute
-              exact
-              path="/recipes/create"
-              component={RecipeCreate}
-              loggedIn={loggedIn}
-            />
-
-            <ProtectedRoute
-              exact
-              path="/recipes/:id/edit"
-              component={RecipeEdit}
-              loggedIn={loggedIn}
-              loadItem={loadSingleItem}
-              onItemDelete={getOrders}
-            />
-            <ProtectedRoute
-              exact
-              path="/change-password"
-              component={ChangePassword}
-              loggedIn={loggedIn}
-              submitError={changePasswordError}
-              setSubmitError={setChangePasswordError}
-              onPasswordChange={changePassword}
-            />
-
-            <ProtectedRoute
-              exact
-              path="/change-avatar"
-              component={UpdateAvatar}
-              loggedIn={loggedIn}
-              onAvatarChange={changeAvatar}
-            />
-
-            <Route exact path="/recipes/:id">
-              <SingleCard
-                loggedIn={loggedIn}
-                loadItem={loadSingleItem}
+    <HelmetProvider>
+      <AuthContext.Provider value={loggedIn}>
+        <UserContext.Provider value={user}>
+          <div className="App">
+            <Header orders={orders} loggedIn={loggedIn} onSignOut={onSignOut} />
+            <Switch>
+              <Route
+                exact
+                path="/user/:id"
+                component={User}
                 updateOrders={updateOrders}
               />
-            </Route>
-
-            <Route exact path="/about">
-              <NotFound />
-              {/* <About component={About} /> */}
-            </Route>
-
-            <Route exact path="/reset-password">
-              <ResetPassword onPasswordReset={onPasswordReset} />
-            </Route>
-
-            <Route exact path="/technologies">
-              <NotFound />
-              {/* <Technologies component={Technologies}/> */}
-            </Route>
-
-            <Route exact path="/recipes">
-              <Main updateOrders={updateOrders} />
-            </Route>
-
-            <Route exact path="/signin">
-              <SignIn
-                onSignIn={authorization}
-                submitError={authError}
-                setSubmitError={setAuthError}
+              <ProtectedRoute
+                exact
+                path="/cart"
+                component={Cart}
+                orders={orders}
+                loggedIn={loggedIn}
+                updateOrders={updateOrders}
               />
-            </Route>
-            <Route exact path="/signup">
-              <SignUp
-                onSignUp={registration}
-                submitError={registrError}
-                setSubmitError={setRegistrError}
+              <ProtectedRoute
+                exact
+                path="/subscriptions"
+                component={Subscriptions}
+                loggedIn={loggedIn}
               />
-            </Route>
-            <Route exact path="/">
-              <Redirect to="/recipes" />
-            </Route>
-            <Route path="*">
-              <NotFound />
-            </Route>
-          </Switch>
-          <Footer />
-        </div>
-      </UserContext.Provider>
-    </AuthContext.Provider>
+
+              <ProtectedRoute
+                exact
+                path="/favorites"
+                component={Favorites}
+                loggedIn={loggedIn}
+                updateOrders={updateOrders}
+              />
+
+              <ProtectedRoute
+                exact
+                path="/recipes/create"
+                component={RecipeCreate}
+                loggedIn={loggedIn}
+              />
+
+              <ProtectedRoute
+                exact
+                path="/recipes/:id/edit"
+                component={RecipeEdit}
+                loggedIn={loggedIn}
+                loadItem={loadSingleItem}
+                onItemDelete={getOrders}
+              />
+              <ProtectedRoute
+                exact
+                path="/change-password"
+                component={ChangePassword}
+                loggedIn={loggedIn}
+                submitError={changePasswordError}
+                setSubmitError={setChangePasswordError}
+                onPasswordChange={changePassword}
+              />
+
+              <ProtectedRoute
+                exact
+                path="/change-avatar"
+                component={UpdateAvatar}
+                loggedIn={loggedIn}
+                onAvatarChange={changeAvatar}
+              />
+
+              <Route exact path="/recipes/:id">
+                <SingleCard
+                  loggedIn={loggedIn}
+                  loadItem={loadSingleItem}
+                  updateOrders={updateOrders}
+                />
+              </Route>
+
+              <Route exact path="/about">
+                <NotFound />
+                {/* <About component={About} /> */}
+              </Route>
+
+              <Route exact path="/reset-password">
+                <ResetPassword onPasswordReset={onPasswordReset} />
+              </Route>
+
+              <Route exact path="/technologies">
+                <NotFound />
+                {/* <Technologies component={Technologies}/> */}
+              </Route>
+
+              <Route exact path="/recipes">
+                <Main updateOrders={updateOrders} />
+              </Route>
+
+              <Route exact path="/signin">
+                <SignIn
+                  onSignIn={authorization}
+                  submitError={authError}
+                  setSubmitError={setAuthError}
+                />
+              </Route>
+              <Route exact path="/signup">
+                <SignUp
+                  onSignUp={registration}
+                  submitError={registrError}
+                  setSubmitError={setRegistrError}
+                />
+              </Route>
+              <Route exact path="/">
+                <Redirect to="/recipes" />
+              </Route>
+              <Route path="*">
+                <NotFound />
+              </Route>
+            </Switch>
+            <Footer />
+          </div>
+        </UserContext.Provider>
+      </AuthContext.Provider>
+    </HelmetProvider>
   );
 }
 
