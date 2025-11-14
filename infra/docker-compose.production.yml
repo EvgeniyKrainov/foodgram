@@ -14,7 +14,7 @@ services:
     env_file: .env
 
   backend:
-    image: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest  # ЗАМЕНИТЬ
+    image: ${DOCKER_USERNAME}/foodgram_backend:latest
     container_name: foodgram_backend
     restart: always
     volumes:
@@ -27,7 +27,7 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings
 
   frontend:
-    image: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest  # ЗАМЕНИТЬ
+    image: ${DOCKER_USERNAME}/foodgram_frontend:latest
     container_name: foodgram_frontend
     command: >
       sh -c "
@@ -42,7 +42,7 @@ services:
     restart: "no"
 
   nginx:
-    image: ${{ secrets.DOCKER_USERNAME }}/foodgram_nginx:latest  # ЗАМЕНИТЬ
+    image: ${DOCKER_USERNAME}/foodgram_nginx:latest
     container_name: foodgram_nginx
     ports:
       - "85:80"

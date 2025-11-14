@@ -159,7 +159,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Copy docker-compose files via ssh
+      - name: Copy repository to server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -168,6 +168,19 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "."
           target: "foodgram"
+      - name: Setup .env file on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd foodgram/infra
+            # Заменяем плейсхолдер в .env файле
+            sed -i 's/ваш_логин_докерхаб/${{ secrets.DOCKER_USERNAME }}/g' .env
+            # Проверяем что заменилось
+            cat .env | grep DOCKER_USERNAME
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
@@ -177,16 +190,17 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram/infra
-            sudo docker compose pull
-            sudo docker compose down
-            sudo docker compose up -d
+            # Используем production compose файл
+            sudo docker compose -f docker-compose.production.yml pull
+            sudo docker compose -f docker-compose.production.yml down
+            sudo docker compose -f docker-compose.production.yml up -d
             # Даем контейнерам время запуститься
             sleep 30
             # Команды для backend
-            sudo docker compose exec backend python manage.py migrate
-            sudo docker compose exec backend python manage.py collectstatic --noinput
-            # Health check
-            timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://${{ secrets.HOST }})" != "200" ]]; do sleep 5; done' || false
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --noinput
+            # Health check (исправлен порт)
+            timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://${{ secrets.HOST }}:85)" != "200" ]]; do sleep 5; done' || false
 
   rollback_on_failure:
     runs-on: ubuntu-latest
@@ -202,7 +216,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram/infra
-            sudo docker compose down
+            sudo docker compose -f docker-compose.production.yml down
             echo "Деплой завершился с ошибкой. Выполнен откат."
   
   update_badge:
@@ -270,5 +284,5 @@ jobs:
           📅 Время: ${{ github.event.head_commit.timestamp }}
           🔖 Коммит: ${{ github.sha }}
           👤 Автор: ${{ github.actor }}
-          🌐 Сайт: http://${{ secrets.HOST }}
+          🌐 Сайт: http://${{ secrets.HOST }}:85
           📊 Статус: ${{ needs.deploy.result }}
