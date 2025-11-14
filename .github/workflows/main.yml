@@ -175,6 +175,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          debug: true
           script: |
             cd foodgram/infra
             # Заменяем плейсхолдер в .env файле
