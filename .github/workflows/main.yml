@@ -194,12 +194,16 @@ jobs:
           script: |
             cd foodgram
       
-            echo "=== Исправляем depends_on в docker-compose (убираем condition) ==="
+            echo "=== Исправляем depends_on в docker-compose ==="
             sed -i '/condition:/d' docker-compose.production.yml
       
-            echo "=== Запуск деплоя ==="
-            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml pull
+            echo "=== Останавливаем старые контейнеры ==="
             sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml down
+      
+            echo "=== Пул новых образов ==="
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml pull
+      
+            echo "=== Запускаем контейнеры ==="
             sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml up -d
       
             echo "=== Ожидание запуска контейнеров ==="
@@ -208,23 +212,17 @@ jobs:
             echo "=== Проверка статуса контейнеров ==="
             sudo docker compose -f docker-compose.production.yml ps
             echo ""
-            echo "=== Логи backend ==="
-            sudo docker compose -f docker-compose.production.yml logs backend --tail=50 || echo "Не удалось получить логи backend"
-            echo ""
-            echo "=== Логи db ==="
-            sudo docker compose -f docker-compose.production.yml logs db --tail=20 || echo "Не удалось получить логи db"
-      
-            echo "=== Проверка подключения к БД ==="
-            sudo docker compose -f docker-compose.production.yml exec db pg_isready -U django_user -d django_db || echo "БД не готова"
+            echo "=== Логи foodgram_backend ==="
+            sudo docker compose -f docker-compose.production.yml logs foodgram_backend --tail=50
       
             echo "=== Попытка выполнения миграций ==="
-            if sudo docker compose -f docker-compose.production.yml ps backend | grep -q "Up"; then
-              echo "Backend запущен, выполняем миграции..."
-              sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
-              sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --noinput
+            if sudo docker compose -f docker-compose.production.yml ps foodgram_backend | grep -q "Up"; then
+              echo "foodgram_backend запущен, выполняем миграции..."
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py migrate
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py collectstatic --noinput
             else
-              echo "Backend не запущен, проверяем причину..."
-              sudo docker compose -f docker-compose.production.yml logs backend --tail=100
+              echo "foodgram_backend не запущен, проверяем причину..."
+              sudo docker compose -f docker-compose.production.yml logs foodgram_backend --tail=100
               exit 1
             fi
       
