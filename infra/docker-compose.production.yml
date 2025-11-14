@@ -23,7 +23,7 @@ services:
       - static_volume:/app/static/
       - media_volume:/app/media/
     depends_on:
-      condition: service_healthy
+      - db
 
     command: >
       sh -c "
