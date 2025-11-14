@@ -183,7 +183,7 @@ jobs:
           source: "infra/docker-compose.production.yml"
           target: "foodgram/"
           strip_components: 1
-    
+      
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
@@ -194,22 +194,23 @@ jobs:
           script: |
             cd foodgram
       
-            echo "=== Исправляем depends_on в docker-compose ==="
-            sed -i '/condition:/d' docker-compose.production.yml
+            echo "=== Проверяем структуру проекта в контейнере ==="
+            sudo docker compose -f docker-compose.production.yml exec foodgram_backend ls -la /app/
       
-            echo "=== Останавливаем старые контейнеры ==="
-            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml down
+            echo "=== Исправляем команду запуска Gunicorn ==="
+            # Временно меняем команду запуска в docker-compose
+            sed -i 's|command:.*|command: gunicorn foodgram.wsgi:application --bind 0.0.0.0:9000|g' docker-compose.production.yml
       
-            echo "=== Пул новых образов ==="
-            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml pull
+            echo "=== Перезапускаем backend с исправленной командой ==="
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml up -d foodgram_backend
       
-            echo "=== Запускаем контейнеры ==="
-            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml up -d
+            echo "=== Ждем перезапуска ==="
+            sleep 20
       
-            echo "=== Ожидание запуска контейнеров ==="
-            sleep 30
+            echo "=== Проверяем логи после исправления ==="
+            sudo docker compose -f docker-compose.production.yml logs foodgram_backend --tail=20
       
-            echo "=== Проверка статуса контейнеров ==="
+            echo "=== Проверяем статус контейнеров ==="
             sudo docker compose -f docker-compose.production.yml ps
             echo ""
             echo "=== Логи foodgram_backend ==="
