@@ -182,6 +182,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "infra/docker-compose.production.yml"
           target: "foodgram/"
+          strip_components: 1 
     
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
@@ -192,6 +193,10 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram
+            echo "=== Перемещение файлов ==="
+            mv infra/docker-compose.production.yml ./
+            ls -la
+            echo "=== Запуск деплоя ==="
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
@@ -199,7 +204,7 @@ jobs:
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --noinput
             timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
-
+  
   rollback_on_failure:
     runs-on: ubuntu-latest
     if: failure() && github.ref == 'refs/heads/main'
