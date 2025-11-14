@@ -159,6 +159,31 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+      - name: Debug file structure in detail
+        run: |
+          echo "=== Подробная отладка структуры файлов ==="
+          pwd
+          ls -la
+          echo ""
+          echo "=== Проверка существования файла ==="
+          if [ -f "foodgram/infra/docker-compose.production.yml" ]; then
+            echo "✅ Файл найден: foodgram/infra/docker-compose.production.yml"
+            ls -la "foodgram/infra/docker-compose.production.yml"
+            echo "=== Содержимое файла (первые 10 строк) ==="
+            head -10 "foodgram/infra/docker-compose.production.yml"
+          else
+            echo "❌ Файл НЕ найден: foodgram/infra/docker-compose.production.yml"
+            echo "=== Проверка папки foodgram ==="
+            ls -la foodgram/
+            echo "=== Проверка папки foodgram/infra ==="
+            ls -la foodgram/infra/
+            echo "=== Все файлы в foodgram/infra ==="
+            find foodgram/infra/ -type f
+          fi
+          echo ""
+          echo "=== Проверка пути относительно корня ==="
+          find . -name "docker-compose.production.yml" -type f
+
       - name: Copy docker-compose.production via ssh
         uses: appleboy/scp-action@master
         with:
