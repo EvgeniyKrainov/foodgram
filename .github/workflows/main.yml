@@ -193,20 +193,14 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram
-          
-            echo "=== Проверка файлов на сервере ==="
-            ls -la
-            echo ""
-            echo "=== Исправляем depends_on в docker-compose (убираем condition) ==="
             sed -i '/condition:/d' docker-compose.production.yml
-          
             echo "=== Запуск деплоя ==="
-            sudo docker compose -f docker-compose.production.yml --env-file infra/.env pull
-            sudo docker compose -f docker-compose.production.yml --env-file infra/.env down
-            sudo docker compose -f docker-compose.production.yml --env-file infra/.env up -d
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml pull
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml down
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml up -d
             sleep 30
-            sudo docker compose -f docker-compose.production.yml --env-file infra/.env exec backend python manage.py migrate
-            sudo docker compose -f docker-compose.production.yml --env-file infra/.env exec backend python manage.py collectstatic --noinput
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --noinput
             timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
   
   rollback_on_failure:
