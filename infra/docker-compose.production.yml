@@ -1,72 +1,67 @@
 volumes:
-  pg_data_production:
+  pg_data:
   static_volume:
   media_volume:
+  frontend_volume:
 
 services:
   db:
-    image: postgres:13.10
-    env_file: 
-      - ./infra/.env
+    image: postgres:13.0-alpine
+    container_name: foodgram_db
+    restart: always
     volumes:
-      - pg_data_production:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-foodgram_user}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  foodgram_backend:
-    image: ${DOCKER_USERNAME}/foodgram_backend
-    env_file: 
+      - pg_data:/var/lib/postgresql/data/
+    env_file:
       - ./infra/.env
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: foodgram_backend
+    restart: always
     volumes:
       - static_volume:/app/static/
       - media_volume:/app/media/
     depends_on:
-      db:
-        condition: service_healthy
-    command: >
-      sh -c "
-        echo 'Ждем запуска базы данных...' &&
-        while ! python -c \"import socket; socket.create_connection(('db', 5432), timeout=1)\" 2>/dev/null; do
-          sleep 1
-        done &&
-        echo 'База данных запущена!' &&
-        python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        gunicorn foodgram_backend.wsgi:application --bind 0.0.0.0:9000
-      "
-
-  foodgram_frontend:
-    image: ${DOCKER_USERNAME}/foodgram_frontend
+      - db
     env_file:
       - ./infra/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: foodgram_frontend
     command: >
       sh -c "
-        cp -r /app/build/. /frontend_static/ &&
-        echo 'Frontend files copied. Container will keep running.' &&
-        tail -f /dev/null  # Контейнер не будет завершаться
+        cp -rf /usr/share/nginx/html/* /var/html/frontend/ &&
+        chown -R 101:101 /var/html/frontend/ &&
+        chmod -R 755 /var/html/frontend/ &&
+        echo 'Frontend structure:' &&
+        find /var/html/frontend/ -type f -name '*.js' -o -name '*.css' | head -10
       "
     volumes:
-      - static_volume:/frontend_static
-      - media_volume:/app/media 
+      - frontend_volume:/var/html/frontend/
+    restart: "no"
 
-  foodgram_nginx:
+  nginx:
     build:
-      context: .
-      dockerfile: Dockerfile.nginx
-    image: ${DOCKER_USERNAME}/foodgram_nginx
-    env_file:
-      - .env
-    volumes:
-      - static_volume:/staticfiles/
-      - media_volume:/app/media
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      context: ../nginx
+      dockerfile: Dockerfile
+    container_name: foodgram_nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:80"    # HTTP для редиректа
+      - "443:443"  # HTTPS
+    volumes:
+      - static_volume:/var/html/static/
+      - media_volume:/var/html/media/
+      - frontend_volume:/var/html/frontend/
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
-      - foodgram_backend
-      - foodgram_frontend
+      - backend
+      - frontend
+    restart: always
