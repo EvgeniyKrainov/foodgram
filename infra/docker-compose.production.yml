@@ -54,9 +54,12 @@ services:
       - media_volume:/app/media 
 
   foodgram_nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     image: ${DOCKER_USERNAME}/foodgram_nginx
     env_file:
-      - ./infra/.env
+      - .env
     volumes:
       - static_volume:/staticfiles/
       - media_volume:/app/media
