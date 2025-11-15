@@ -11,7 +11,7 @@ services:
     volumes:
       - pg_data_production:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-foodgram_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,8 @@ services:
       - static_volume:/app/static/
       - media_volume:/app/media/
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: >
       sh -c "
         echo 'Ждем запуска базы данных...' &&
@@ -42,7 +43,12 @@ services:
     image: ${DOCKER_USERNAME}/foodgram_frontend
     env_file:
       - ./infra/.env
-    command: cp -r /app/build/. /frontend_static/
+    command: >
+      sh -c "
+        cp -r /app/build/. /frontend_static/ &&
+        echo 'Frontend files copied. Container will keep running.' &&
+        tail -f /dev/null  # Контейнер не будет завершаться
+      "
     volumes:
       - static_volume:/frontend_static
       - media_volume:/app/media 
