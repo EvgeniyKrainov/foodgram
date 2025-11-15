@@ -37,9 +37,9 @@ const SingleCard = ({ loadItem, updateOrders }) => {
   const handleCopyLink = () => {
     api
       .copyRecipeLink({ id })
-      .then(({ "short-link": shortLink }) => {
+      .then(({ direct_link }) => {
         navigator.clipboard
-          .writeText(shortLink)
+          .writeText(direct_link)
           .then(() => {
             setNotificationPosition("40px");
             setTimeout(() => {
