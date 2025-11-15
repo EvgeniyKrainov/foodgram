@@ -304,7 +304,6 @@ jobs:
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
           ${{ needs.deploy.result == 'success' && '🚀 Деплой Foodgram успешно выполнен!' || '❌ Деплой Foodgram завершился с ошибкой!' }}
-          ${{ needs.load_data.result == 'success' && '📊 Данные загружены успешно!' || needs.load_data.result == 'skipped' && '📊 Загрузка данных пропущена' || needs.load_data.result == 'failure' && '❌ Ошибка загрузки данных!' }}
           📅 Время: ${{ github.event.head_commit.timestamp }}
           🔖 Коммит: ${{ github.sha }}
           👤 Автор: ${{ github.actor }}
