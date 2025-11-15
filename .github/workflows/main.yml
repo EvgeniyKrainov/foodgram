@@ -253,22 +253,17 @@ jobs:
             cd foodgram
             
             echo "=== Проверяем доступность backend ==="
-            if sudo docker compose -f docker-compose.yml ps foodgram_backend | grep -q "Up"; then
+            if sudo docker compose -f docker-compose.production.yml ps foodgram_backend | grep -q "Up"; then
               echo "✅ Backend запущен, загружаем данные..."
               
               echo "=== Загружаем ингредиенты и теги ==="
-              sudo docker compose -f docker-compose.yml exec foodgram_backend python load_data.py
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python load_data.py
               
               echo "=== Создаем тестовые рецепты ==="
-              sudo docker compose -f docker-compose.yml exec foodgram_backend python create_test_data.py
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python create_test_data.py
               
               echo "=== Проверяем загруженные данные ==="
-              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py shell -c "
-                from recipes.models import Ingredient, Tag, Recipe
-                print(f'Ингредиентов: {Ingredient.objects.count()}')
-                print(f'Тегов: {Tag.objects.count()}')
-                print(f'Рецептов: {Recipe.objects.count()}')
-              "
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py shell -c "from recipes.models import Ingredient, Tag, Recipe; print(f'Ингредиентов: {Ingredient.objects.count()}'); print(f'Тегов: {Tag.objects.count()}'); print(f'Рецептов: {Recipe.objects.count()}')"
             else
               echo "❌ Backend не доступен для загрузки данных"
               exit 1
