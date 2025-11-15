@@ -294,7 +294,7 @@ jobs:
 
   send_message:
     runs-on: ubuntu-latest
-    needs: [deploy, load_data]
+    needs: deploy  # Убрали load_data
     if: always() && github.ref == 'refs/heads/main'
     steps:
     - name: Send message
@@ -308,5 +308,4 @@ jobs:
           🔖 Коммит: ${{ github.sha }}
           👤 Автор: ${{ github.actor }}
           🌐 Сайт: https://foodgram.3utilities.com
-          📊 Статус деплоя: ${{ needs.deploy.result }}
-          📊 Статус данных: ${{ needs.load_data.result }}
+          📊 Статус: ${{ needs.deploy.result }}
