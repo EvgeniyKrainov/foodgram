@@ -52,7 +52,7 @@ const SingleCard = ({ loadItem, updateOrders }) => {
              * поэтому добавил отдельную плашку на этот случай
              */
             setNotificationError({
-              text: `Ваша ссылка: ${shortLink}`,
+              text: `Ваша ссылка: ${direct_link}`,
               position: "40px",
             });
           });
