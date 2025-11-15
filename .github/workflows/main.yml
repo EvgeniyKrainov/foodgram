@@ -159,7 +159,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-    
+      
       - name: Debug final file check
         run: |
           echo "=== Финальная проверка ==="
@@ -183,7 +183,7 @@ jobs:
           source: "infra/docker-compose.yml"
           target: "foodgram/"
           strip_components: 1
-      
+        
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
@@ -209,9 +209,9 @@ jobs:
               sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py migrate
               sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py collectstatic --noinput
               echo "=== Загружаем данные (ингредиенты и теги) ==="
-              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python load_data.py
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py load_data
               echo "=== Создаем тестовые данные (рецепты) ==="
-              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python create_test_data.py
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py create_test_data
               echo "=== Health check ==="
               timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
             else
@@ -219,7 +219,7 @@ jobs:
               echo "=== Запускаем backend с миграциями, данными и gunicorn в одной команде ==="
               sudo docker compose -f docker-compose.production.yml stop foodgram_backend
               sudo docker compose -f docker-compose.production.yml rm -f foodgram_backend
-              sudo docker run -d --name foodgram_backend_fixed --network foodgram_default -v foodgram_static_volume:/app/static/ -v foodgram_media_volume:/app/media/ --env-file infra/.env ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest /bin/sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python load_data.py && python create_test_data.py && gunicorn foodgram.wsgi:application --bind 0.0.0.0:9000"
+              sudo docker run -d --name foodgram_backend_fixed --network foodgram_default -v foodgram_static_volume:/app/static/ -v foodgram_media_volume:/app/media/ --env-file infra/.env ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest /bin/sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py load_data && python manage.py create_test_data && gunicorn foodgram.wsgi:application --bind 0.0.0.0:9000"
               sleep 10
               echo "=== Проверяем новый контейнер ==="
               sudo docker logs foodgram_backend_fixed --tail=20
