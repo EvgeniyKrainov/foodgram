@@ -25,10 +25,22 @@ services:
       - media_volume:/app/media/
     depends_on:
       - db
-    env_file:
-      - ./infra/.env
+    env_file: .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
+    command: >
+      sh -c "
+        echo 'Ждем запуска базы данных...' &&
+        while ! python -c \"import socket; socket.create_connection(('db', 5432), timeout=1)\" 2>/dev/null; do
+          sleep 1
+        done &&
+        echo 'База данных запущена!' &&
+        python manage.py migrate &&
+        python manage.py collectstatic --noinput &&
+        python load_data.py &&
+        python create_test_data.py &&
+        gunicorn config.wsgi:application --bind 0.0.0.0:8000
+      "
 
   frontend:
     build:

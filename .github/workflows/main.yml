@@ -237,6 +237,43 @@ jobs:
               sudo docker logs foodgram_backend_fixed --tail=20
             fi
   
+  load_data:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main' && needs.deploy.result == 'success'
+    steps:
+      - name: Load data to production
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd foodgram
+            
+            echo "=== Проверяем доступность backend ==="
+            if sudo docker compose -f docker-compose.production.yml ps foodgram_backend | grep -q "Up"; then
+              echo "✅ Backend запущен, загружаем данные..."
+              
+              echo "=== Загружаем ингредиенты и теги ==="
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python load_data.py
+              
+              echo "=== Создаем тестовые рецепты ==="
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python create_test_data.py
+              
+              echo "=== Проверяем загруженные данные ==="
+              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py shell -c "
+                from recipes.models import Ingredient, Tag, Recipe
+                print(f'Ингредиентов: {Ingredient.objects.count()}')
+                print(f'Тегов: {Tag.objects.count()}')
+                print(f'Рецептов: {Recipe.objects.count()}')
+              "
+            else
+              echo "❌ Backend не доступен для загрузки данных"
+              exit 1
+            fi
+
   rollback_on_failure:
     runs-on: ubuntu-latest
     if: failure() && github.ref == 'refs/heads/main'
@@ -306,7 +343,7 @@ jobs:
 
   send_message:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: [deploy, load_data]
     if: always() && github.ref == 'refs/heads/main'
     steps:
     - name: Send message
@@ -316,8 +353,10 @@ jobs:
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
           ${{ needs.deploy.result == 'success' && '🚀 Деплой Foodgram успешно выполнен!' || '❌ Деплой Foodgram завершился с ошибкой!' }}
+          ${{ needs.load_data.result == 'success' && '📊 Данные загружены успешно!' || needs.load_data.result == 'skipped' && '📊 Загрузка данных пропущена' || needs.load_data.result == 'failure' && '❌ Ошибка загрузки данных!' }}
           📅 Время: ${{ github.event.head_commit.timestamp }}
           🔖 Коммит: ${{ github.sha }}
           👤 Автор: ${{ github.actor }}
-          🌐 Сайт: http://${{ secrets.HOST }}:85
-          📊 Статус: ${{ needs.deploy.result }}
+          🌐 Сайт: https://foodgram.3utilities.com
+          📊 Статус деплоя: ${{ needs.deploy.result }}
+          📊 Статус данных: ${{ needs.load_data.result }}
