@@ -28,6 +28,10 @@ services:
     env_file: .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
+      - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
+      - SECURE_SSL_REDIRECT=True
+      - USE_X_FORWARDED_HOST=True
+      - MEDIA_URL=https://foodgram.3utilities.com/media/
     command: >
       sh -c "
         echo 'Ждем запуска базы данных...' &&
