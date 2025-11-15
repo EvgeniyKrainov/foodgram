@@ -11,7 +11,7 @@ services:
     volumes:
       - pg_data_production:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,7 +26,6 @@ services:
       - media_volume:/app/media/
     depends_on:
       - db
-
     command: >
       sh -c "
         echo 'Ждем запуска базы данных...' &&
@@ -52,12 +51,13 @@ services:
     image: ${DOCKER_USERNAME}/foodgram_nginx
     env_file:
       - ./infra/.env
-
     volumes:
       - static_volume:/staticfiles/
-      - media_volume:/app/media 
+      - media_volume:/app/media
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     ports:
-      - "85:80"
+      - "80:80"
+      - "443:443"
     depends_on:
       - foodgram_backend
       - foodgram_frontend
