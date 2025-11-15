@@ -170,7 +170,7 @@ jobs:
           ls -la infra/
           echo ""
           echo "=== Проверка docker-compose файла ==="
-          ls -la infra/docker-compose.production.yml
+          ls -la infra/docker-compose.yml
           echo "✅ Файл готов к копированию!"
 
       - name: Copy docker-compose.yml via ssh
@@ -180,7 +180,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "infra/docker-compose.production.yml"
+          source: "infra/docker-compose.yml"
           target: "foodgram/"
           strip_components: 1
       
@@ -195,33 +195,33 @@ jobs:
             cd foodgram
       
             echo "=== Исправляем команду запуска в docker-compose ==="
-            sed -i 's|command:.*|command: ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:9000"]|g' docker-compose.production.yml
+            sed -i 's|command:.*|command: ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:9000"]|g' docker-compose.yml
       
             echo "=== Проверяем изменения ==="
-            grep -A 2 "command:" docker-compose.production.yml
+            grep -A 2 "command:" docker-compose.yml
             
             echo "=== Перезапускаем backend ==="
-            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml up -d foodgram_backend
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.yml up -d foodgram_backend
       
             echo "=== Ждем запуска ==="
             sleep 15
             
             echo "=== Проверяем логи ==="
-            sudo docker compose -f docker-compose.production.yml logs foodgram_backend --tail=20
+            sudo docker compose -f docker-compose.yml logs foodgram_backend --tail=20
             
             echo "=== Если backend запустился, выполняем миграции ==="
-            if sudo docker compose -f docker-compose.production.yml ps foodgram_backend | grep -q "Up"; then
+            if sudo docker compose -f docker-compose.yml ps foodgram_backend | grep -q "Up"; then
               echo "✅ Backend запущен, выполняем миграции..."
-              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py migrate
-              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py collectstatic --noinput
+              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py migrate
+              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py collectstatic --noinput
               echo "=== Health check ==="
               timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
             else
               echo "❌ Backend не запустился, проверяем альтернативный вариант..."
               
               echo "=== Запускаем backend с миграциями и gunicorn в одной команде ==="
-              sudo docker compose -f docker-compose.production.yml stop foodgram_backend
-              sudo docker compose -f docker-compose.production.yml rm -f foodgram_backend
+              sudo docker compose -f docker-compose.yml stop foodgram_backend
+              sudo docker compose -f docker-compose.yml rm -f foodgram_backend
 
               sudo docker run -d \
                 --name foodgram_backend_fixed \
@@ -253,17 +253,17 @@ jobs:
             cd foodgram
             
             echo "=== Проверяем доступность backend ==="
-            if sudo docker compose -f docker-compose.production.yml ps foodgram_backend | grep -q "Up"; then
+            if sudo docker compose -f docker-compose.yml ps foodgram_backend | grep -q "Up"; then
               echo "✅ Backend запущен, загружаем данные..."
               
               echo "=== Загружаем ингредиенты и теги ==="
-              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python load_data.py
+              sudo docker compose -f docker-compose.yml exec foodgram_backend python load_data.py
               
               echo "=== Создаем тестовые рецепты ==="
-              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python create_test_data.py
+              sudo docker compose -f docker-compose.yml exec foodgram_backend python create_test_data.py
               
               echo "=== Проверяем загруженные данные ==="
-              sudo docker compose -f docker-compose.production.yml exec foodgram_backend python manage.py shell -c "
+              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py shell -c "
                 from recipes.models import Ingredient, Tag, Recipe
                 print(f'Ингредиентов: {Ingredient.objects.count()}')
                 print(f'Тегов: {Tag.objects.count()}')
@@ -288,7 +288,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram/infra
-            sudo docker compose -f docker-compose.production.yml down
+            sudo docker compose -f docker-compose.yml down
             echo "Деплой завершился с ошибкой. Выполнен откат."
   
   update_badge:
