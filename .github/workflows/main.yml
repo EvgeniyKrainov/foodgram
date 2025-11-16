@@ -193,37 +193,29 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram
-            echo "=== Исправляем команду запуска в docker-compose ==="
-            sed -i 's|command:.*|command: ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:9000"]|g' docker-compose.yml
-            echo "=== Проверяем изменения ==="
-            grep -A 2 "command:" docker-compose.yml
-            echo "=== Перезапускаем все сервисы ==="
+            echo "=== Pulling latest images ==="
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_nginx:latest
+            
+            echo "=== Restarting all services ==="
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.yml down
             sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.yml up -d --force-recreate
-            echo "=== Ждем запуска ==="
+            
+            echo "=== Waiting for startup ==="
             sleep 15
-            echo "=== Проверяем логи ==="
-            sudo docker compose -f docker-compose.yml logs foodgram_backend --tail=20
-            echo "=== Если backend запустился, выполняем миграции и загрузку данных ==="
-            if sudo docker compose -f docker-compose.yml ps foodgram_backend | grep -q "Up"; then
-              echo "✅ Backend запущен, выполняем миграции..."
-              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py migrate
-              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py collectstatic --noinput
-              echo "=== Загружаем данные (ингредиенты и теги) ==="
-              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py load_data
-              echo "=== Создаем тестовые данные (рецепты) ==="
-              sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py create_test_data
-              echo "=== Health check ==="
-              timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
-            else
-              echo "❌ Backend не запустился, проверяем альтернативный вариант..."
-              echo "=== Запускаем backend с миграциями, данными и gunicorn в одной команде ==="
-              sudo docker compose -f docker-compose.yml stop foodgram_backend
-              sudo docker compose -f docker-compose.yml rm -f foodgram_backend
-              sudo docker run -d --name foodgram_backend_fixed --network foodgram_default -v foodgram_static_volume:/app/static/ -v foodgram_media_volume:/app/media/ --env-file infra/.env ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest /bin/sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py load_data && python manage.py create_test_data && gunicorn foodgram.wsgi:application --bind 0.0.0.0:9000"
-              sleep 10
-              echo "=== Проверяем новый контейнер ==="
-              sudo docker logs foodgram_backend_fixed --tail=20
-            fi
+            
+            echo "=== Checking containers ==="
+            sudo docker compose -f docker-compose.yml ps
+            
+            echo "=== Running migrations and data loading ==="
+            sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py migrate
+            sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py collectstatic --noinput
+            sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py load_data
+            sudo docker compose -f docker-compose.yml exec foodgram_backend python manage.py create_test_data
+            
+            echo "=== Health check ==="
+            timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com)" != "200" ]]; do sleep 5; done' || false
   
   rollback_on_failure:
     runs-on: ubuntu-latest
