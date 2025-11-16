@@ -15,7 +15,7 @@ services:
       - ./infra/.env
 
   backend:
-    image: slaize19/foodgram_backend:fixed
+    image: slaize19/foodgram_backend:latest
     container_name: foodgram_backend
     restart: always
     volumes:
