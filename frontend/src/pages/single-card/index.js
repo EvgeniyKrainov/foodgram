@@ -35,29 +35,48 @@ const SingleCard = ({ loadItem, updateOrders }) => {
   const history = useHistory();
 
   const handleCopyLink = () => {
-    api
-      .copyRecipeLink({ id })
-      .then(({ direct_link }) => {
-        navigator.clipboard
-          .writeText(direct_link)
-          .then(() => {
-            setNotificationPosition("40px");
-            setTimeout(() => {
-              setNotificationPosition("-100%");
-            }, 3000);
-          })
-          .catch(() => {
-            /**
-             * В Safari не работает запись в буфер внутри асинхронного запроса,
-             * поэтому добавил отдельную плашку на этот случай
-             */
-            setNotificationError({
-              text: `Ваша ссылка: ${direct_link}`,
-              position: "40px",
-            });
+
+    const direct_link = `${window.location.origin}/recipes/${id}/`;
+  
+    console.log('Копируем ссылку:', direct_link);
+    
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(direct_link)
+        .then(() => {
+          setNotificationPosition("40px");
+          setTimeout(() => {
+            setNotificationPosition("-100%");
+          }, 3000);
+        })
+        .catch(() => {
+          // Fallback для Safari и старых браузеров
+          setNotificationError({
+            text: `Ваша ссылка: ${direct_link}`,
+            position: "40px",
           });
-      })
-      .catch((err) => console.log(err));
+        });
+    } else {
+      // Fallback для браузеров без clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = direct_link;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setNotificationPosition("40px");
+        setTimeout(() => {
+          setNotificationPosition("-100%");
+        }, 3000);
+      } catch (err) {
+        setNotificationError({
+          text: `Ваша ссылка: ${direct_link}`,
+          position: "40px",
+        });
+      }
+      document.body.removeChild(textArea);
+    }
   };
 
   const handleErrorClose = () => {
