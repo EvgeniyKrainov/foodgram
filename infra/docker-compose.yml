@@ -25,37 +25,16 @@ services:
       - db
     env_file:
       - ./infra/.env
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings
-      - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
-      - SECURE_SSL_REDIRECT=True
-      - USE_X_FORWARDED_HOST=True
-      - MEDIA_URL=https://foodgram.3utilities.com/media/
     command: >
-      sh -c "
-        echo 'Ждем запуска базы данных...' &&
-        while ! python -c \"import socket; socket.create_connection(('db', 5432), timeout=1)\" 2>/dev/null; do
-          sleep 1
-        done &&
-        echo 'База данных запущена!' &&
-        python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        python manage.py load_data &&
-        python manage.py create_test_data &&
-        gunicorn config.wsgi:application --bind 0.0.0.0:8000
-      "
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py load_data &&
+             python manage.py create_test_data &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:9000"
 
   frontend:
     image: slaize19/foodgram_frontend:latest
     container_name: foodgram_frontend
-    command: >
-      sh -c "
-        cp -rf /usr/share/nginx/html/* /var/html/frontend/ &&
-        chown -R 101:101 /var/html/frontend/ &&
-        chmod -R 755 /var/html/frontend/ &&
-        echo 'Frontend structure:' &&
-        find /var/html/frontend/ -type f -name '*.js' -o -name '*.css' | head -10
-      "
     volumes:
       - frontend_volume:/var/html/frontend/
     restart: "no"
@@ -67,12 +46,11 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - static_volume:/var/html/frontend/static/
+      - static_volume:/var/html/static/
       - media_volume:/var/html/media/
       - frontend_volume:/var/html/frontend/
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
-      - frontend
     restart: always
