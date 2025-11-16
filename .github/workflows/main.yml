@@ -194,11 +194,11 @@ jobs:
           script: |
             cd foodgram
             echo "=== Исправляем команду запуска в docker-compose ==="
-            sed -i 's|command:.*|command: ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:9000"]|g' docker-compose.production.yml
+            sed -i 's|command:.*|command: ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:9000"]|g' docker-compose.yml
             echo "=== Проверяем изменения ==="
-            grep -A 2 "command:" docker-compose.production.yml
+            grep -A 2 "command:" docker-compose.yml
             echo "=== Перезапускаем все сервисы ==="
-            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.production.yml up -d --force-recreate
+            sudo DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}" docker compose -f docker-compose.yml up -d --force-recreate
             echo "=== Ждем запуска ==="
             sleep 15
             echo "=== Проверяем логи ==="
