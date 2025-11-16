@@ -15,9 +15,7 @@ services:
       - ./infra/.env
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: slaize19/foodgram_backend:latest
     container_name: foodgram_backend
     restart: always
     volumes:
@@ -25,7 +23,8 @@ services:
       - media_volume:/app/media/
     depends_on:
       - db
-    env_file: .env
+    env_file:
+      - ./infra/.env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
@@ -42,14 +41,12 @@ services:
         python manage.py migrate &&
         python manage.py collectstatic --noinput &&
         python manage.py load_data &&
-        python create_test_data.py &&
+        python manage.py create_test_data &&
         gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: slaize19/foodgram_frontend:latest
     container_name: foodgram_frontend
     command: >
       sh -c "
@@ -64,13 +61,11 @@ services:
     restart: "no"
 
   nginx:
-    build:
-      context: ../nginx
-      dockerfile: Dockerfile
+    image: slaize19/foodgram_nginx:latest
     container_name: foodgram_nginx
     ports:
-      - "80:80"    # HTTP для редиректа
-      - "443:443"  # HTTPS
+      - "80:80"
+      - "443:443"
     volumes:
       - static_volume:/var/html/static/
       - media_volume:/var/html/media/
