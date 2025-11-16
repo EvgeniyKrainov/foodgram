@@ -1,6 +1,5 @@
 # Foodgram - «Продуктовый помощник»
-
-![Foodgram CI/CD Status](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/EvgeniyKrainov/c36306919c19ff4132fca6d5676c3a3e/raw/kittygram-workflow-status.json)
+[![Foodgram CI/CD](https://github.com/EvgeniyKrainov/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/EvgeniyKrainov/foodgram/actions/workflows/main.yml)
 [![Python](https://img.shields.io/badge/Python-3.9-3776AB.svg?logo=python&logoColor=white)](https://python.org)
 [![Django](https://img.shields.io/badge/Django-3.2-092E20.svg?logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Django REST](https://img.shields.io/badge/Django%20REST-3.12.4-ff1709.svg?logo=django&logoColor=white)](https://www.django-rest-framework.org/)
