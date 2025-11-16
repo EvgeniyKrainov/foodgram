@@ -15,7 +15,7 @@ services:
       - ./infra/.env
 
   backend:
-    image: slaize19/foodgram_backend:latest
+    image: slaize19/foodgram_backend:fixed
     container_name: foodgram_backend
     restart: always
     volumes:
@@ -25,12 +25,7 @@ services:
       - db
     env_file:
       - ./infra/.env
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             python manage.py load_data &&
-             python manage.py create_test_data &&
-             gunicorn config.wsgi:application --bind 0.0.0.0:9000"
+    command: "gunicorn config.wsgi:application --bind 0.0.0.0:9000"
 
   frontend:
     image: slaize19/foodgram_frontend:latest
