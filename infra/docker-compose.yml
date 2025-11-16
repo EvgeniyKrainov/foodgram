@@ -41,7 +41,7 @@ services:
         echo 'База данных запущена!' &&
         python manage.py migrate &&
         python manage.py collectstatic --noinput &&
-        python load_data.py &&
+        python manage.py load_data &&
         python create_test_data.py &&
         gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
