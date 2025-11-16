@@ -1,3 +1,5 @@
+version: '3.8'
+
 volumes:
   pg_data:
   static_volume:
@@ -9,6 +11,11 @@ services:
     image: postgres:13.0-alpine
     container_name: foodgram_db
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     volumes:
       - pg_data:/var/lib/postgresql/data/
     env_file:
@@ -18,11 +25,18 @@ services:
     image: slaize19/foodgram_backend:latest
     container_name: foodgram_backend
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - static_volume:/app/static/
       - media_volume:/app/media/
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - ./infra/.env
     command: "gunicorn config.wsgi:application --bind 0.0.0.0:9000"
@@ -32,7 +46,7 @@ services:
     container_name: foodgram_frontend
     volumes:
       - frontend_volume:/var/html/frontend/
-    restart: "no"
+    restart: always  # ✅ Исправлено
 
   nginx:
     image: slaize19/foodgram_nginx:latest
@@ -47,5 +61,8 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
     restart: always
