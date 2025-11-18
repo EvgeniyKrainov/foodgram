@@ -203,7 +203,6 @@ jobs:
             
             echo "=== Pulling latest images ==="
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
-            sudo docker compose exec backend python manage.py makemigrations recipes
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_nginx:latest
             
@@ -219,17 +218,28 @@ jobs:
             echo "=== Checking containers ==="
             sudo docker compose ps
             
-            echo "=== Checking migration status ==="
+            echo "=== Checking current migration status ==="
             sudo docker compose exec backend python manage.py showmigrations recipes
             
             echo "=== Creating missing migrations ==="
             sudo docker compose exec backend python manage.py makemigrations
             
-            echo "=== Applying all migrations ==="
-            sudo docker compose exec backend python manage.py migrate
+            echo "=== Force applying new migrations ==="
+            sudo docker compose exec backend python manage.py migrate --fake-initial
             
-            echo "=== Final migration check ==="
+            echo "=== Force applying recipes migrations specifically ==="
+            sudo docker compose exec backend python manage.py migrate recipes 0004 --fake
+            sudo docker compose exec backend python manage.py migrate recipes
+            
+            echo "=== Final migration verification ==="
             sudo docker compose exec backend python manage.py showmigrations recipes
+            
+            echo "=== Checking if recipe_ingredient table exists ==="
+            sudo docker compose exec backend python manage.py shell -c "
+            from django.db import connection
+            tables = connection.introspection.table_names()
+            print('Tables:', [t for t in tables if 'recipe' in t])
+            "
             
             echo "=== Collecting static files ==="
             sudo docker compose exec backend python manage.py collectstatic --noinput
