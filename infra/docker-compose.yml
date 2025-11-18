@@ -18,6 +18,10 @@ services:
       - pg_data:/var/lib/postgresql/data/
     env_file:
       - ./infra/.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER} 
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
   backend:
     image: slaize19/foodgram_backend:latest
