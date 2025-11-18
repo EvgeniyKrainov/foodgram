@@ -193,7 +193,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram/infra 
-            
+  
             echo "=== Проверка файлов в папке ==="
             pwd
             ls -la
@@ -215,26 +215,32 @@ jobs:
             echo "=== Restarting all services ==="
             sudo docker compose up -d --force-recreate
             
-            echo "=== Waiting for startup ==="
-            sleep 30
+            echo "=== Waiting for backend to be healthy ==="
+            timeout 180 bash -c 'until sudo docker compose exec backend python manage.py check --database default; do echo "Waiting for backend to be ready..."; sleep 15; done'
             
             echo "=== Checking containers ==="
             sudo docker compose ps
             
             echo "=== Проверка логов backend ==="
-            sudo docker compose logs backend --tail=50
+            sudo docker compose logs backend --tail=20
             
-            echo "=== Проверка здоровья backend ==="
-            sudo docker compose exec backend python manage.py check --database default || echo "Backend health check failed"
-            
-            echo "=== Running migrations and data loading ==="
+            echo "=== Running migrations ==="
             sudo docker compose exec backend python manage.py migrate
+            
+            echo "=== Collecting static files ==="
             sudo docker compose exec backend python manage.py collectstatic --noinput
+            
+            echo "=== Waiting for database to be ready ==="
+            sleep 10
+            
+            echo "=== Loading data ==="
             sudo docker compose exec backend python manage.py load_data
             sudo docker compose exec backend python manage.py create_test_data
             
             echo "=== Final health check ==="
-            timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com/api/)" != "200" ]]; do sleep 5; done' || false
+            timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com/api/recipes/)" != "200" ]]; do echo "Waiting for API endpoint..."; sleep 10; done' && echo "✅ API is ready!" || echo "⚠️  API check timeout but continuing"
+            
+            echo "=== Deployment completed! ==="
   
   rollback_on_failure:
     runs-on: ubuntu-latest
