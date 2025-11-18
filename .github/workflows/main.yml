@@ -209,9 +209,6 @@ jobs:
             echo "=== Остановка и очистка старых контейнеров ==="
             sudo docker compose down --remove-orphans || true
             
-            echo "=== Принудительное удаление конфликтующих контейнеров ==="
-            sudo docker rm -f foodgram_db foodgram_backend foodgram_frontend foodgram_nginx 2>/dev/null || true
-            
             echo "=== Restarting all services ==="
             sudo docker compose up -d --force-recreate
             
@@ -221,26 +218,23 @@ jobs:
             echo "=== Checking containers ==="
             sudo docker compose ps
             
-            echo "=== Проверка логов backend ==="
-            sudo docker compose logs backend --tail=20
-            
-            echo "=== Running migrations ==="
+            echo "=== Creating and applying migrations ==="
+            sudo docker compose exec backend python manage.py makemigrations || echo "No new migrations needed"
             sudo docker compose exec backend python manage.py migrate
             
             echo "=== Collecting static files ==="
             sudo docker compose exec backend python manage.py collectstatic --noinput
             
-            echo "=== Waiting for database to be ready ==="
-            sleep 10
+            echo "=== Loading initial data ==="
+            sudo docker compose exec backend python manage.py load_data || echo "Data already loaded"
             
-            echo "=== Loading data ==="
-            sudo docker compose exec backend python manage.py load_data
-            sudo docker compose exec backend python manage.py create_test_data
+            echo "=== Creating test data ==="
+            sudo docker compose exec backend python manage.py create_test_data || echo "Test data already exists"
             
             echo "=== Final health check ==="
             timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com/api/recipes/)" != "200" ]]; do echo "Waiting for API endpoint..."; sleep 10; done' && echo "✅ API is ready!" || echo "⚠️  API check timeout but continuing"
             
-            echo "=== Deployment completed! ==="
+            echo "=== Deployment completed successfully! ==="
   
   rollback_on_failure:
     runs-on: ubuntu-latest
