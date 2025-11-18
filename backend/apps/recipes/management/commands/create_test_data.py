@@ -27,13 +27,13 @@ class Command(BaseCommand):
             )
 
         # Проверяем существует ли таблица Recipe_ingredient
-        table_exists = ('recipes_recipe_ingredient'
+        table_exists = ('recipes_recipeingredient'
                         in connection.introspection.table_names())
 
         if not table_exists:
             self.stdout.write(
                 self.style.WARNING(
-                    '⚠️  Таблица recipes_recipe_ingredient не существует. '
+                    '⚠️  Таблица recipes_recipeingredient не существует. '
                     'Пропускаем создание связей рецепт-ингредиент.'
                 )
             )
