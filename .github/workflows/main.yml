@@ -203,6 +203,7 @@ jobs:
             
             echo "=== Pulling latest images ==="
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+            sudo docker compose exec backend python manage.py makemigrations recipes
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_nginx:latest
             
@@ -218,18 +219,26 @@ jobs:
             echo "=== Checking containers ==="
             sudo docker compose ps
             
-            echo "=== Creating and applying migrations ==="
-            sudo docker compose exec backend python manage.py makemigrations || echo "No new migrations needed"
+            echo "=== Checking migration status ==="
+            sudo docker compose exec backend python manage.py showmigrations recipes
+            
+            echo "=== Creating missing migrations ==="
+            sudo docker compose exec backend python manage.py makemigrations
+            
+            echo "=== Applying all migrations ==="
             sudo docker compose exec backend python manage.py migrate
+            
+            echo "=== Final migration check ==="
+            sudo docker compose exec backend python manage.py showmigrations recipes
             
             echo "=== Collecting static files ==="
             sudo docker compose exec backend python manage.py collectstatic --noinput
             
             echo "=== Loading initial data ==="
-            sudo docker compose exec backend python manage.py load_data || echo "Data already loaded"
+            sudo docker compose exec backend python manage.py load_data
             
             echo "=== Creating test data ==="
-            sudo docker compose exec backend python manage.py create_test_data || echo "Test data already exists"
+            sudo docker compose exec backend python manage.py create_test_data
             
             echo "=== Final health check ==="
             timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com/api/recipes/)" != "200" ]]; do echo "Waiting for API endpoint..."; sleep 10; done' && echo "✅ API is ready!" || echo "⚠️  API check timeout but continuing"
