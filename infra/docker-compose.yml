@@ -48,7 +48,8 @@ services:
     container_name: foodgram_frontend
     volumes:
       - frontend_volume:/var/html/frontend/
-    restart: always  # ✅ Исправлено
+    restart: always
+    command: sh -c "cp -r /usr/share/nginx/html/* /var/html/frontend/ && tail -f /dev/null"
 
   nginx:
     image: slaize19/foodgram_nginx:latest
