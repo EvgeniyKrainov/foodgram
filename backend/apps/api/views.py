@@ -44,7 +44,6 @@ class UserViewSet(
         pagination_class=None,
         permission_classes=(IsAuthenticated,),
     )
-
     def me(self, request):
         if request.method in ["PATCH", "PUT"]:
             serializer = UserUpdateSerializer(
@@ -64,7 +63,6 @@ class UserViewSet(
         methods=["post"],
         permission_classes=(IsAuthenticated,)
     )
-
     def set_password(self, request):
         serializer = SetPasswordSerializer(request.user, data=request.data)
         if serializer.is_valid(raise_exception=True):
