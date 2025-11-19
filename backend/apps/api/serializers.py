@@ -23,7 +23,8 @@ class UserReadSerializer(UserSerializer):
             "username",
             "first_name",
             "last_name",
-            "is_subscribed"
+            "is_subscribed",
+            "avatar"
         )
 
     def get_is_subscribed(self, obj):
@@ -89,6 +90,24 @@ class SetPasswordSerializer(serializers.Serializer):
         instance.set_password(validated_data["new_password"])
         instance.save()
         return validated_data
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """[PATCH] Обновление данных пользователя, включая аватар."""
+
+    avatar = Base64ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "email",
+            "id", 
+            "username",
+            "first_name",
+            "last_name",
+            "avatar"
+        )
+        read_only_fields = ("id", "username")
 
 
 class RecipeSerializer(serializers.ModelSerializer):

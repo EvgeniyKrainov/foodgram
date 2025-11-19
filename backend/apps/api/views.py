@@ -39,6 +39,25 @@ class UserViewSet(
 
     @action(
         detail=False,
+        methods=["patch", "put"],
+        permission_classes=(IsAuthenticated,)
+    )
+    def me(self, request):
+        if request.method in ["PATCH", "PUT"]:
+            serializer = UserUpdateSerializer(
+                request.user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            serializer = UserReadSerializer(request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=False,
         methods=["get"],
         pagination_class=None,
         permission_classes=(IsAuthenticated,),
