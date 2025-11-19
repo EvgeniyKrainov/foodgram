@@ -4,6 +4,12 @@ from django.db import models
 
 class User(AbstractUser):
     email = models.EmailField(max_length=254, unique=True)
+    avatar = models.ImageField(
+        upload_to='users/avatars/',
+        blank=True,
+        null=True,
+        verbose_name="Аватар"
+    )
 
     class Meta:
         ordering = ["id"]
