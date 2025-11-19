@@ -4,6 +4,7 @@ from django.db.models import Q
 
 User = get_user_model()
 
+
 class EmailOrUsernameModelBackend(ModelBackend):
     '''
     Custom authentication backend allowing login with email or username
@@ -14,7 +15,7 @@ class EmailOrUsernameModelBackend(ModelBackend):
 
         try:
             user = User.objects.get(
-                Q(username__iexact=username) | 
+                Q(username__iexact=username) |
                 Q(email__iexact=username)
             )
         except User.DoesNotExist:
