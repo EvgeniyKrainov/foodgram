@@ -19,7 +19,8 @@ from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeReadSerializer, RecipeSerializer,
                           SetPasswordSerializer, SubscribeAuthorSerializer,
                           SubscriptionsSerializer, TagSerializer,
-                          UserCreateSerializer, UserReadSerializer)
+                          UserCreateSerializer, UserReadSerializer,
+                          UserUpdateSerializer)
 
 
 class UserViewSet(
@@ -39,15 +40,17 @@ class UserViewSet(
 
     @action(
         detail=False,
-        methods=["patch", "put"],
-        permission_classes=(IsAuthenticated,)
+        methods=["get", "patch", "put"],
+        pagination_class=None,
+        permission_classes=(IsAuthenticated,),
     )
+
     def me(self, request):
         if request.method in ["PATCH", "PUT"]:
             serializer = UserUpdateSerializer(
                 request.user,
                 data=request.data,
-                partial=True
+                partial=(request.method == "PATCH")
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -58,19 +61,10 @@ class UserViewSet(
 
     @action(
         detail=False,
-        methods=["get"],
-        pagination_class=None,
-        permission_classes=(IsAuthenticated,),
-    )
-    def me(self, request):
-        serializer = UserReadSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        detail=False,
         methods=["post"],
         permission_classes=(IsAuthenticated,)
     )
+
     def set_password(self, request):
         serializer = SetPasswordSerializer(request.user, data=request.data)
         if serializer.is_valid(raise_exception=True):

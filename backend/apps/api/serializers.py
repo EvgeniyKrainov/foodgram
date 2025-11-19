@@ -101,13 +101,19 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             "email",
-            "id", 
+            "id",
             "username",
             "first_name",
             "last_name",
             "avatar"
         )
         read_only_fields = ("id", "username")
+
+    def update(self, instance, validated_data):
+        avatar = validated_data.pop('avatar', None)
+        if avatar:
+            instance.avatar = avatar
+        return super().update(instance, validated_data)
 
 
 class RecipeSerializer(serializers.ModelSerializer):
