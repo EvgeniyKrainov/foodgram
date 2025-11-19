@@ -49,7 +49,7 @@ class UserViewSet(
             serializer = UserUpdateSerializer(
                 request.user,
                 data=request.data,
-                partial=(request.method == "PATCH")
+                partial=True
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
