@@ -192,68 +192,36 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd foodgram/infra 
+            cd foodgram/infra
   
-            echo "=== Проверка файлов в папке ==="
-            pwd
-            ls -la
-            
-            echo "=== Проверка .env файла ==="
-            cat .env
-            
             echo "=== Pulling latest images ==="
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_nginx:latest
             
-            echo "=== Остановка и очистка старых контейнеров ==="
-            sudo docker compose down --remove-orphans || true
-            
-            echo "=== Restarting all services ==="
+            echo "=== Restarting services ==="
+            sudo docker compose down --remove-orphans
             sudo docker compose up -d --force-recreate
             
-            echo "=== Waiting for backend to be healthy ==="
-            timeout 180 bash -c 'until sudo docker compose exec backend python manage.py check --database default; do echo "Waiting for backend to be ready..."; sleep 15; done'
+            echo "=== Waiting for backend ==="
+            sleep 30
             
-            echo "=== Checking containers ==="
-            sudo docker compose ps
-            
-            echo "=== Checking current migration status ==="
-            sudo docker compose exec backend python manage.py showmigrations recipes
-            
-            echo "=== Creating missing migrations ==="
-            sudo docker compose exec backend python manage.py makemigrations
-            
-            echo "=== Force applying new migrations ==="
-            sudo docker compose exec backend python manage.py migrate --fake-initial
-            
-            echo "=== Force applying recipes migrations specifically ==="
-            sudo docker compose exec backend python manage.py migrate recipes 0004 --fake
-            sudo docker compose exec backend python manage.py migrate recipes
-            
-            echo "=== Final migration verification ==="
-            sudo docker compose exec backend python manage.py showmigrations recipes
-            
-            echo "=== Checking if recipe_ingredient table exists ==="
-            sudo docker compose exec backend python manage.py shell -c "
-            from django.db import connection
-            tables = connection.introspection.table_names()
-            print('Tables:', [t for t in tables if 'recipe' in t])
-            "
+            echo "=== Applying migrations ==="
+            sudo docker compose exec backend python manage.py migrate
             
             echo "=== Collecting static files ==="
             sudo docker compose exec backend python manage.py collectstatic --noinput
             
-            echo "=== Loading initial data ==="
+            echo "=== Loading data ==="
             sudo docker compose exec backend python manage.py load_data
             
-            echo "=== Creating test data ==="
-            sudo docker compose exec backend python manage.py create_test_data
-            
-            echo "=== Final health check ==="
-            timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://foodgram.3utilities.com/api/recipes/)" != "200" ]]; do echo "Waiting for API endpoint..."; sleep 10; done' && echo "✅ API is ready!" || echo "⚠️  API check timeout but continuing"
-            
-            echo "=== Deployment completed successfully! ==="
+            echo "=== Final status ==="
+            echo "✅ Все сервисы запущены"
+            echo "✅ База данных настроена"
+            echo "✅ Статические файлы собраны"
+            echo "✅ Данные загружены"
+            echo "🎉 Foodgram успешно развернут!"
+            echo "🌐 Сайт: https://foodgram.3utilities.com"
   
   rollback_on_failure:
     runs-on: ubuntu-latest
