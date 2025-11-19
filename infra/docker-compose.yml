@@ -17,7 +17,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data/
     env_file:
-      - .env
+      - infra/.env
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER} 
@@ -40,7 +40,7 @@ services:
       db:
         condition: service_healthy
     env_file:
-      - .env
+      - infra/.env
     command: "gunicorn config.wsgi:application --bind 0.0.0.0:9000"
 
   frontend:
