@@ -8,11 +8,10 @@ from apps.api.serializers import (AvatarSerializer, CustomUserCreateSerializer,
                                   PasswordSerializer, RecipeCreateSerializer,
                                   RecipeSerializer, ShortRecipeSerializer,
                                   TagSerializer)
-from apps.recipes.models import (Favorite, Ingredient, Recipe,
-                                 Shopping_cart, Tag)
+from apps.recipes.models import (Favorite, Ingredient, Recipe, Shopping_cart,
+                                 Tag)
 from apps.users.models import Subscribe
 from django.contrib.auth import authenticate, get_user_model
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
