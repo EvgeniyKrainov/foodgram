@@ -3,6 +3,7 @@ from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
+from config.constants import DEFAULT_PAGE_SIZE
 
 load_dotenv()
 
@@ -73,24 +74,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-if os.getenv('USE_SQLITE', 'False').lower() == 'true':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_NAME', 'foodgram'),
-            'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'db'),
-            'PORT': os.getenv('DB_PORT', 5432),
-        }
-    }
+}
+
+# if os.getenv('USE_SQLITE', 'False').lower() == 'true':
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': os.getenv('POSTGRES_NAME', 'foodgram'),
+#             'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
+#             'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#             'HOST': os.getenv('DB_HOST', 'db'),
+#             'PORT': os.getenv('DB_PORT', 5432),
+#         }
+#     }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -148,16 +156,54 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': [
-        'rest_framework.pagination.PageNumberPagination',
-    ],
-    'PAGE_SIZE': 10,
-
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': DEFAULT_PAGE_SIZE,
 }
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'djoser': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': False,
+    'SERIALIZERS': {
+        'user_create': 'apps.api.serializers.CustomUserCreateSerializer',
+        'user': 'apps.api.serializers.CustomUserSerializer',
+        'current_user': 'apps.api.serializers.CustomUserSerializer',
+        'token_create': 'djoser.serializers.TokenCreateSerializer',
+    },
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.IsAuthenticated'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    }
 }
+
+AUTHENTICATION_BACKENDS = [
+    'apps.api.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
