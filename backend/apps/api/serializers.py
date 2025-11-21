@@ -1,6 +1,6 @@
 from apps.recipes.models import (Favorite, Ingredient, Recipe,
                                  RecipeIngredient, Shopping_cart, Tag)
-from apps.users.models import Subscribe, User
+from apps.users.models import Subscribe
 from config.constants import (MAX_AMOUNT, MAX_COOKING_TIME, MIN_AMOUNT,
                               MIN_COOKING_TIME)
 from django.contrib.auth import get_user_model
