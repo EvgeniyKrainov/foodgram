@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
 
+from config.constants import DEFAULT_PAGE_SIZE
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
-from config.constants import DEFAULT_PAGE_SIZE
 
 load_dotenv()
 
@@ -128,8 +128,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-LANGUAGE_CODE = 'ru-ru'  # Меняем на русский
+LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
@@ -160,7 +159,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': DEFAULT_PAGE_SIZE,
 }
 
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -183,7 +181,6 @@ LOGGING = {
         },
     },
 }
-
 
 DJOSER = {
     'LOGIN_FIELD': 'email',

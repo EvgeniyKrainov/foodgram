@@ -1,8 +1,7 @@
+from apps.api.views import (CustomAuthToken, IngredientViewSet, RecipeViewSet,
+                            TagViewSet, UsersViewSet)
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-
-from apps.api.views import (CustomAuthToken, IngredientViewSet, RecipeViewSet,
-                       TagViewSet, UsersViewSet)
 
 router = DefaultRouter()
 router.register('recipes', RecipeViewSet, basename='recipes')
@@ -19,10 +18,12 @@ urlpatterns = [
          RecipeViewSet.as_view({'get': 'get_link'}),
          name='recipe-get-link'),
     path('recipes/<int:pk>/favorite/',
-         RecipeViewSet.as_view({'post': 'favorite', 'delete': 'favorite'}),
+         RecipeViewSet.as_view({'post': 'favorite',
+                                'delete': 'favorite'}),
          name='recipe-favorite'),
     path('recipes/<int:pk>/shopping_cart/',
-         RecipeViewSet.as_view({'post': 'shopping_cart', 'delete': 'shopping_cart'}),
+         RecipeViewSet.as_view({'post': 'shopping_cart',
+                                'delete': 'shopping_cart'}),
          name='recipe-shopping-cart'),
     path('recipes/download_shopping_cart/',
          RecipeViewSet.as_view({'get': 'download_shopping_cart'}),
@@ -32,11 +33,10 @@ urlpatterns = [
     path('users/me/avatar/', UsersViewSet.as_view({'put': 'me_avatar'}),
          name='user-me-avatar'),
     path('users/<int:pk>/subscribe/',
-         UsersViewSet.as_view({'post': 'subscribe', 'delete': 'unsubscribe'}),
+         UsersViewSet.as_view({'post': 'subscribe',
+                               'delete': 'unsubscribe'}),
          name='user-subscribe'),
     path('users/subscriptions/',
          UsersViewSet.as_view({'get': 'subscriptions'}),
          name='user-subscriptions'),
-    #path('auth/token/login/', CustomAuthToken.as_view(),
-        # name='token-login'),
 ]
