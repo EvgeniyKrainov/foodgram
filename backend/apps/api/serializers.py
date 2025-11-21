@@ -130,17 +130,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         """Возвращает список рецептов пользователя."""
-        try:
-            request = self.context.get('request')
-            recipes_limit = request.query_params.get('recipes_limit')
-            queryset = obj.recipes.all().order_by('-id')
-            if recipes_limit:
-                queryset = queryset[:int(recipes_limit)]
-            return ShortRecipeSerializer(
-                queryset, many=True, context=self.context
-            ).data
-        except Exception as e:
-            return []
+        request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit')
+        queryset = obj.recipes.all().order_by('-id')
+        if recipes_limit:
+            queryset = queryset[:int(recipes_limit)]
+        return ShortRecipeSerializer(
+            queryset, many=True, context=self.context
+        ).data
 
     def get_recipes_count(self, obj):
         """Возвращает общее количество рецептов пользователя."""

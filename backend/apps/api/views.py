@@ -348,7 +348,7 @@ class UsersViewSet(viewsets.ModelViewSet):
                 authors, many=True, context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
+        except Exception:
             return Response(
                 {'error': 'Internal server error'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
