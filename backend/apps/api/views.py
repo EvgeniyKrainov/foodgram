@@ -9,18 +9,14 @@ from apps.api.serializers import (AvatarSerializer, CustomUserCreateSerializer,
                                   RecipeSerializer, ShortRecipeSerializer,
                                   TagSerializer)
 from apps.recipes.models import (Favorite, Ingredient, Recipe,
-                                 RecipeIngredient, Shopping_cart, Tag)
+                                 Shopping_cart, Tag)
 from apps.users.models import Subscribe
-from config.constants import DEFAULT_PAGE_SIZE
 from django.contrib.auth import authenticate, get_user_model
-from django.core.paginator import Paginator
-from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import serializers, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
@@ -213,7 +209,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     serializer_class = CustomUserSerializer
     pagination_class = FoodgramPagination
 
-
     def get_permissions(self):
         """Определяет права доступа для различных действий."""
         if self.action in ['create', 'list', 'retrieve']:
@@ -314,6 +309,7 @@ class UsersViewSet(viewsets.ModelViewSet):
                 )
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(
         detail=True,
         methods=['delete'],
@@ -369,7 +365,8 @@ class UsersViewSet(viewsets.ModelViewSet):
         serializer = PasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         if not request.user.check_password(
-            serializer.validated_data['current_password']):
+            serializer.validated_data['current_password']
+        ):
             return Response(
                 {'current_password': 'Неверный текущий пароль'},
                 status=status.HTTP_400_BAD_REQUEST

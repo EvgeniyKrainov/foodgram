@@ -8,6 +8,8 @@ class FoodgramPagination(PageNumberPagination):
     max_page_size = MAX_PAGE_SIZE
 
     def get_page_size(self, request):
-        print(f"Pagination debug: page_size_query_param={self.page_size_query_param}")
-        print(f"Pagination debug: limit param={request.query_params.get('limit')}")
+        print(f"Pagination debug: page_size_query_param={
+            self.page_size_query_param}")
+        print(f"Pagination debug: limit param={
+            request.query_params.get('limit')}")
         return super().get_page_size(request)
