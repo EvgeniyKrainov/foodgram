@@ -265,10 +265,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         """Общий метод для проверки отношений пользователя с рецептом."""
         request = self.context.get('request')
         return (
-            request and
-            request.user.is_authenticated and
-            getattr(obj, related_manager_name).filter(user=request.user
-                                                      ).exists())
+            request
+            and request.user.is_authenticated
+            and getattr(obj, related_manager_name
+                        ).filter(user=request.user).exists()
+        )
 
     def get_is_favorited(self, obj):
         """Проверяет, добавлен ли рецепт в избранное."""
