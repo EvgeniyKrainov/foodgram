@@ -324,6 +324,19 @@ class UserViewSet(DjoserUserViewSet):
 
     pagination_class = FoodgramPagination
 
+    @property
+    def paginator(self):
+        if not hasattr(self, '_paginator'):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        return self._paginator
+
+    @paginator.setter
+    def paginator(self, value):
+        self._paginator = value
+
     @swagger_auto_schema(
         operation_description="Получить информацию о текущем пользователе",
         responses={200: UserListSerializer, 401: 'Не авторизован'}
