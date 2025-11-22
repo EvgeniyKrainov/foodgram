@@ -20,8 +20,6 @@
 * **Swagger UI** (интерактивная документация с тестированием): [https://foodgram.3utilities.com/api/docs/](https://foodgram.3utilities.com/api/docs/)
 * **ReDoc** (альтернативный вид документации): [https://foodgram.3utilities.com/api/redoc/](https://foodgram.3utilities.com/api/redoc/)
 
-Тест в Postman https://evgeniykrainov-1364385.postman.co/workspace/Slaize's-Workspace~232037f7-f54f-42ba-8b33-d229f60db39d/run/50210060-c488f129-9268-4df5-84da-2190f98e1b82
-
 ### 🔍 В документации вы найдете:
 - Полное описание всех эндпоинтов API
 - Параметры запросов и форматы ответов
