@@ -84,6 +84,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = FoodgramPagination
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
 
+    @property
+    def paginator(self):
+        if not hasattr(self, '_paginator'):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        return self._paginator
+
+    @paginator.setter
+    def paginator(self, value):
+        self._paginator = value
+
     @swagger_auto_schema(
         operation_description="Получить список всех рецептов",
         responses={200: RecipeSerializer(many=True)}
