@@ -226,8 +226,8 @@ class UserViewSet(DjoserUserViewSet):
         serializer.save()
         return Response(serializer.data, status=HTTPStatus.OK)
 
-    @action(detail=True, 
-            methods=['post', 'delete'], 
+    @action(detail=True,
+            methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         """Подписаться/отписаться на автора."""

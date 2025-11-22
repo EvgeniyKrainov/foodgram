@@ -269,7 +269,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                                                   related_manager_name
                                                   ).filter(
                                                       user=request.user
-                                                      ).exists())
+                                                      ).exists()
+                )
 
     def get_is_favorited(self, obj):
         """Проверяет, добавлен ли рецепт в избранное."""
