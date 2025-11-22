@@ -30,9 +30,9 @@ class UserListSerializer(DjoserUserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        return (request and
-                request.user.is_authenticated and
-                request.user.subscribing.filter(author=obj).exists())
+        return (request and request.
+                user.is_authenticated and request.
+                user.subscribing.filter(author=obj).exists())
 
 
 class UserSerializer(UserListSerializer):
@@ -40,7 +40,6 @@ class UserSerializer(UserListSerializer):
 
     recipes_count = serializers.ReadOnlyField(source='recipes.count')
     recipes = serializers.SerializerMethodField()
-
 
     class Meta(UserListSerializer.Meta):
         fields = UserListSerializer.Meta.fields + (
@@ -265,11 +264,12 @@ class RecipeSerializer(serializers.ModelSerializer):
     def _check_user_relation(self, obj, related_manager_name):
         """Общий метод для проверки отношений пользователя с рецептом."""
         request = self.context.get('request')
-        return (request and
-                request.user.is_authenticated and
-                getattr(obj,
-                        related_manager_name).filter(user=request.user
-                                                     ).exists())
+        return (request and request.
+                user.is_authenticated and getattr(obj,
+                                                  related_manager_name
+                                                  ).filter(
+                                                      user=request.user
+                                                      ).exists())
 
     def get_is_favorited(self, obj):
         """Проверяет, добавлен ли рецепт в избранное."""

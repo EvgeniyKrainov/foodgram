@@ -1,10 +1,10 @@
 from apps.api.views import (IngredientViewSet, RecipeViewSet, TagViewSet,
                             UserViewSet)
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
-from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from rest_framework.routers import DefaultRouter
 
 schema_view = get_schema_view(
     openapi.Info(

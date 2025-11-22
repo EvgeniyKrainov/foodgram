@@ -31,7 +31,7 @@ def load_tags():
 
     except FileNotFoundError:
         return -1  # Код ошибки для файла не найден
-    except Exception as e:
+    except Exception:
         return -2  # Код ошибки для других ошибок
 
 

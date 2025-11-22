@@ -15,7 +15,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -155,8 +155,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeIngredient.objects.filter(
             recipe__shopping_carts__user=user
         ).values(
-                name=F('ingredient__name'),
-                unit=F('ingredient__measurement_unit')
+            name=F('ingredient__name'),
+            unit=F('ingredient__measurement_unit')
         ).annotate(
             total_amount=Sum('amount')
         ).order_by('ingredient__name')
@@ -226,8 +226,9 @@ class UserViewSet(DjoserUserViewSet):
         serializer.save()
         return Response(serializer.data, status=HTTPStatus.OK)
 
-    @action(detail=True, methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated])
+    @action(detail=True, 
+            methods=['post', 'delete'], 
+            permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         """Подписаться/отписаться на автора."""
         author = self.get_object()
