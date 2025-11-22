@@ -1,43 +1,64 @@
+from apps.api.views import (IngredientViewSet, RecipeViewSet, TagViewSet,
+                            UserViewSet)
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
-from apps.api.views import (IngredientViewSet, RecipeViewSet, TagViewSet,
-                            UsersViewSet)
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Foodgram API",
+        default_version='v1',
+        description=(
+            "Документация для API проекта Foodgram -"
+            "«Продуктовый помощник»\n\n"
+            "## Основные возможности:\n"
+            "- 📝 Управление рецептами (создание, редактирование, удаление)\n"
+            "- 👥 Подписки на авторов\n"
+            "- ⭐ Добавление рецептов в избранное\n"
+            "- 🛒 Формирование списка покупок\n"
+            "- 🔍 Фильтрация рецептов по тегам и ингредиентам\n\n"
+            "## 🔐 Аутентификация\n"
+            "## Аутентификация\n"
+            "Для доступа к защищенным эндпоинтам"
+            "используйте Token authentication.\n"
+            "Получите токен через `/api/auth/token/login/`"
+            "и добавьте в заголовки:\n"
+            "`Authorization: Token ваш_токен`"
+        ),
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="admin@foodgram.ru"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 router = DefaultRouter()
 router.register('recipes', RecipeViewSet, basename='recipes')
 router.register('tags', TagViewSet, basename='tags')
 router.register('ingredients', IngredientViewSet, basename='ingredients')
-router.register('users', UsersViewSet, basename='users')
+router.register('users', UserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('auth/', include('djoser.urls')),
+    path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
 
-    path('recipes/<int:pk>/get-link/',
-         RecipeViewSet.as_view({'get': 'get_link'}),
-         name='recipe-get-link'),
-    path('recipes/<int:pk>/favorite/',
-         RecipeViewSet.as_view({'post': 'favorite',
-                                'delete': 'favorite'}),
-         name='recipe-favorite'),
-    path('recipes/<int:pk>/shopping_cart/',
-         RecipeViewSet.as_view({'post': 'shopping_cart',
-                                'delete': 'shopping_cart'}),
-         name='recipe-shopping-cart'),
-    path('recipes/download_shopping_cart/',
-         RecipeViewSet.as_view({'get': 'download_shopping_cart'}),
-         name='download-shopping-cart'),
-    path('users/me/', UsersViewSet.as_view({'get': 'me'}),
-         name='user-me'),
-    path('users/me/avatar/', UsersViewSet.as_view({'put': 'me_avatar'}),
-         name='user-me-avatar'),
-    path('users/<int:pk>/subscribe/',
-         UsersViewSet.as_view({'post': 'subscribe',
-                               'delete': 'unsubscribe'}),
-         name='user-subscribe'),
-    path('users/subscriptions/',
-         UsersViewSet.as_view({'get': 'subscriptions'}),
-         name='user-subscriptions'),
+    path(
+        'docs/',
+        schema_view.with_ui('swagger', cache_timeout=0),
+        name='schema-swagger-ui'
+    ),
+    path(
+        'redoc/',
+        schema_view.with_ui('redoc', cache_timeout=0),
+        name='schema-redoc'
+    ),
+    path(
+        'swagger<format>/',
+        schema_view.without_ui(cache_timeout=0),
+        name='schema-json'
+    ),
 ]

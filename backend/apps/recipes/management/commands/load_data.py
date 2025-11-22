@@ -2,11 +2,9 @@ import csv
 import json
 import os
 
-from django.core.management.base import BaseCommand
-from progress.bar import IncrementalBar
-
 from apps.recipes.models import Ingredient, Tag
 from config import settings
+from django.core.management.base import BaseCommand
 
 
 def ingredient_create(row):
@@ -25,53 +23,61 @@ def load_tags():
         for tag_data in tags_data:
             tag, created = Tag.objects.get_or_create(
                 name=tag_data['name'],
-                color=tag_data.get('color', '#808080'),
                 slug=tag_data['slug']
             )
             if created:
                 created_count += 1
-                print(f'✅ Создан тег: {tag.name}')
-
         return created_count
 
     except FileNotFoundError:
-        print("⚠️ Файл tags.json не найден")
-        return 0
+        return -1  # Код ошибки для файла не найден
     except Exception as e:
-        print(f"❌ Ошибка при загрузке тегов: {e}")
-        return 0
+        return -2  # Код ошибки для других ошибок
 
 
 class Command(BaseCommand):
     help = "Load ingredients and tags to DB"
 
     def handle(self, *args, **options):
-        # Загрузка ингредиентов
         ingredients_path = os.path.join(settings.BASE_DIR,
                                         "data",
                                         "ingredients.csv")
 
         self.stdout.write("📦 Загрузка ингредиентов...")
-        with open(ingredients_path, "r", encoding="utf-8") as file:
-            row_count = sum(1 for row in file)
 
-        with open(ingredients_path, "r", encoding="utf-8") as file:
-            reader = csv.reader(file)
-            bar = IncrementalBar("ingredients.csv".ljust(17), max=row_count)
-            next(reader)  # Пропускаем заголовок если есть
-            for row in reader:
-                bar.next()
-                ingredient_create(row)
-            bar.finish()
+        try:
+            with open(ingredients_path, "r", encoding="utf-8") as file:
+                reader = csv.reader(file)
+                next(reader)
 
-        # Загрузка тегов
+                count = 0
+                for row in reader:
+                    ingredient_create(row)
+                    count += 1
+
+                self.stdout.write(
+                    self.style.SUCCESS(f"✅ Загружено {count} ингредиентов")
+                )
+
+        except FileNotFoundError:
+            self.stderr.write("❌ Файл ingredients.csv не найден")
+            return
+
         self.stdout.write("🏷️ Загрузка тегов...")
         tags_count = load_tags()
 
+        if tags_count == -1:
+            self.stderr.write("⚠️ Файл tags.json не найден")
+        elif tags_count == -2:
+            self.stderr.write("❌ Ошибка при загрузке тегов")
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(f"✅ Загружено {tags_count} тегов")
+            )
+
         self.stdout.write(
             self.style.SUCCESS(
-                "[!] Успешно загружено: "
-                f"{Ingredient.objects.count()} ингредиентов, "
-                f"{tags_count} тегов"
+                f"[!] Итог: {Ingredient.objects.count()} ингредиентов, "
+                f"{Tag.objects.count()} тегов"
             )
         )

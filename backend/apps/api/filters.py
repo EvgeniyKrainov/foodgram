@@ -1,32 +1,30 @@
-from django_filters.rest_framework import CharFilter, FilterSet, filters
-
-from apps.recipes.models import Ingredient, Recipe, Tag
+from apps.recipes.models import Ingredient, Recipe
+from django_filters.rest_framework import (AllValuesMultipleFilter, CharFilter,
+                                           FilterSet, filters)
 
 
 class RecipeFilter(FilterSet):
-    tags = filters.ModelMultipleChoiceFilter(
-        field_name="tags__slug",
-        to_field_name="slug",
-        queryset=Tag.objects.all()
+
+    tags = AllValuesMultipleFilter(
+        field_name='tags__slug',
+        label='Tags'
     )
-    is_favorited = filters.BooleanFilter(method="is_favorited_filter")
+    is_favorited = filters.BooleanFilter(
+        method='filter_is_favorited')
     is_in_shopping_cart = filters.BooleanFilter(
-        method="is_in_shopping_cart_filter")
+        method='filter_is_in_shopping_cart')
 
     class Meta:
         model = Recipe
-        fields = (
-            "tags",
-            "author",
-        )
+        fields = ('tags', 'author')
 
-    def is_favorited_filter(self, queryset, name, value):
+    def filter_is_favorited(self, queryset, name, value):
         user = self.request.user
         if value and user.is_authenticated:
             return queryset.filter(favorites__user=user)
         return queryset
 
-    def is_in_shopping_cart_filter(self, queryset, name, value):
+    def filter_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
         if value and user.is_authenticated:
             return queryset.filter(shopping_carts__user=user)
@@ -34,7 +32,7 @@ class RecipeFilter(FilterSet):
 
 
 class IngredientFilter(FilterSet):
-    """Фильтр для ингредиентов по началу названия."""
+
     name = CharFilter(field_name='name', lookup_expr='istartswith')
 
     class Meta:

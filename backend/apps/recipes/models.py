@@ -1,11 +1,8 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db import models
-
 from apps.users.models import User
-
-from config.constants import (MAX_LENGHT_NAME, MIN_COOKING_TIME,
-                              MAX_COOKING_TIME, MIN_AMOUNT, MAX_AMOUNT,
-                              MAX_LENGHT_SLUG)
+from config.constants import (MAX_AMOUNT, MAX_COOKING_TIME, MAX_LENGHT_NAME,
+                              MAX_LENGHT_SLUG, MIN_AMOUNT, MIN_COOKING_TIME)
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 
 class Ingredient(models.Model):
@@ -123,11 +120,13 @@ class Favorite(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name="Добавил в избранное",
+        related_name="favorites",
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name="Избранный рецепт",
+        related_name="favorites",
     )
 
     class Meta:
@@ -150,11 +149,13 @@ class ShoppingCart(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name="Добавил в корзину",
+        related_name="shopping_carts",
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name="Рецепт в корзине",
+        related_name="shopping_carts",
     )
 
     class Meta:
