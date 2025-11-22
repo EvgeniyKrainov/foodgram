@@ -1,6 +1,31 @@
 from django.contrib import admin
+from django.core.exceptions import ValidationError
+from django.forms import BaseInlineFormSet
 
 from . import models
+from config.constants import (DEFAULT_EXTRA_FORMS, MIN_REQUIRED_FORMS)
+
+
+class RecipeIngredientInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        if not any(form.cleaned_data.get('ingredient')
+                   for form in self.forms if not form.cleaned_data.get(
+                       'DELETE', False)):
+            raise ValidationError('Рецепт должен содержать хотя бы один ингредиент')
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = models.RecipeIngredient
+    formset = RecipeIngredientInlineFormSet
+    extra = DEFAULT_EXTRA_FORMS
+    min_num = MIN_REQUIRED_FORMS
+
+
+class RecipeTagInline(admin.TabularInline):
+    model = models.Recipe.tags.through
+    extra = DEFAULT_EXTRA_FORMS
+    min_num = MIN_REQUIRED_FORMS
 
 
 @admin.register(models.Ingredient)
@@ -12,8 +37,8 @@ class IngredientAdmin(admin.ModelAdmin):
 
 @admin.register(models.Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "color", "slug")
-    list_editable = ("name", "color", "slug")
+    list_display = ("pk", "name", "slug")
+    list_editable = ("name", "slug")
     empty_value_display = "-пусто-"
 
 
@@ -33,6 +58,10 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ("name", "author", "tags")
     empty_value_display = "-пусто-"
 
+    inlines = [RecipeIngredientInline, RecipeTagInline]
+
+    exclude = ('tags',)
+
     @admin.display(description="В избранном")
     def in_favorites(self, obj):
         return obj.favorite_recipe.count()
@@ -46,17 +75,11 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 
 @admin.register(models.Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ("pk",
-                    "user",
-                    "recipe")
-    list_editable = ("user",
-                     "recipe")
+    list_display = ("pk", "user", "recipe")
+    list_editable = ("user", "recipe")
 
 
-@admin.register(models.Shopping_cart)
+@admin.register(models.ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ("pk",
-                    "user",
-                    "recipe")
-    list_editable = ("user",
-                     "recipe")
+    list_display = ("pk", "user", "recipe")
+    list_editable = ("user", "recipe")

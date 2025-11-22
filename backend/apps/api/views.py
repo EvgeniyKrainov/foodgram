@@ -21,7 +21,7 @@ from apps.api.serializers import (AvatarSerializer, CustomUserCreateSerializer,
                                   PasswordSerializer, RecipeCreateSerializer,
                                   RecipeSerializer, ShortRecipeSerializer,
                                   TagSerializer)
-from apps.recipes.models import (Favorite, Ingredient, Recipe, Shopping_cart,
+from apps.recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart,
                                  Tag)
 from apps.users.models import Subscribe
 
@@ -126,7 +126,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite_delete(self, request, pk=None):
         """Удаляет рецепт из избранного."""
         recipe = get_object_or_404(Recipe, pk=pk)
-        favorite = recipe.favorited_by.filter(user=request.user)
+        favorite = recipe.favorites.filter(user=request.user)
         if not favorite.exists():
             return Response(
                 {'errors': 'Рецепт не в избранном.'},
@@ -151,19 +151,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         if request.method == 'POST':
-            if Shopping_cart.objects.filter(user=request.user,
+            if ShoppingCart.objects.filter(user=request.user,
                                             recipe=recipe).exists():
                 return Response(
                     {'error': 'Рецепт уже в корзине'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            Shopping_cart.objects.create(user=request.user, recipe=recipe)
+            ShoppingCart.objects.create(user=request.user, recipe=recipe)
             serializer = ShortRecipeSerializer(
                 recipe, context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         elif request.method == 'DELETE':
-            cart_item = Shopping_cart.objects.filter(user=request.user,
+            cart_item = ShoppingCart.objects.filter(user=request.user,
                                                      recipe=recipe).first()
             if not cart_item:
                 return Response(
@@ -182,7 +182,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'error': 'Необходима авторизация'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        shopping_cart_items = Shopping_cart.objects.filter(user=user)
+        shopping_cart_items = user.shopping_carts.all()
         ingredients = {}
         for cart_item in shopping_cart_items:
             recipe = cart_item.recipe
@@ -319,7 +319,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         """Отписывает пользователя от другого пользователя."""
         user = request.user
         following = self.get_object()
-        follow = user.following.filter(following=following)
+        follow = user.subscribing.filter(author=following)
         if not follow.exists():
             return Response(
                 {'errors': 'Вы не подписаны на этого пользователя'},
@@ -337,7 +337,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         """Возвращает список авторов, на которых подписан пользователь."""
         try:
             user = request.user
-            subscriptions = user.subscriber.all()
+            subscriptions = user.subscribing.all()
             authors = [subscription.author for subscription in subscriptions]
             page = self.paginate_queryset(authors)
             if page is not None:

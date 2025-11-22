@@ -3,7 +3,7 @@ from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
 from apps.recipes.models import (Favorite, Ingredient, Recipe,
-                                 RecipeIngredient, Shopping_cart, Tag)
+                                 RecipeIngredient, ShoppingCart, Tag)
 from apps.users.models import Subscribe
 from config.constants import (MAX_AMOUNT, MAX_COOKING_TIME, MIN_AMOUNT,
                               MIN_COOKING_TIME)
@@ -127,7 +127,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return request.user.subscriber.filter(author=obj).exists()
+        return request.user.subscribing.filter(author=obj).exists()
 
     def get_recipes(self, obj):
         """Возвращает список рецептов пользователя."""
@@ -342,16 +342,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Favorite.objects.filter(user=request.user, recipe=obj).exists()
+        return obj.favorites.filter(user=request.user).exists()
 
     def get_is_in_shopping_cart(self, obj):
         """Проверяет, добавлен ли рецепт в список покупок."""
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Shopping_cart.objects.filter(
-            user=request.user,
-            recipe=obj).exists()
+        return obj.shopping_carts.filter(user=request.user).exists()
 
     def get_image(self, obj):
         """

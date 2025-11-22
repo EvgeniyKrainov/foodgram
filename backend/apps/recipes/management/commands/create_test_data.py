@@ -1,143 +1,92 @@
-from django.contrib.auth import get_user_model
+import csv
+import json
+
 from django.core.management.base import BaseCommand
-from django.db import connection
+from progress.bar import IncrementalBar
 
-from apps.recipes.models import Ingredient, Recipe, Tag
+from apps.recipes.models import Ingredient, Tag
+from config import constants
 
-User = get_user_model()
+
+def ingredient_create(row):
+    Ingredient.objects.get_or_create(name=row[0], measurement_unit=row[1])
+
+
+def load_tags(command_instance):
+    """Загрузка тегов из JSON файла"""
+    try:
+        with open(constants.TAGS_FILE_PATH, "r", encoding="utf-8") as file:
+            tags_data = json.load(file)
+
+        created_count = 0
+        for tag_data in tags_data:
+            tag, created = Tag.objects.get_or_create(
+                name=tag_data['name'],
+                color=tag_data.get('color', '#808080'),
+                slug=tag_data['slug']
+            )
+            if created:
+                created_count += 1
+                command_instance.stdout.write(
+                    command_instance.style.SUCCESS(f'✅ Создан тег: {tag.name}')
+                )
+
+        return created_count
+
+    except FileNotFoundError:
+        command_instance.stderr.write(
+            command_instance.style.ERROR("⚠️ Файл tags.json не найден")
+        )
+        return 0
+    except Exception as e:
+        command_instance.stderr.write(
+            command_instance.style.ERROR(f"❌ Ошибка при загрузке тегов: {e}")
+        )
+        return 0
 
 
 class Command(BaseCommand):
-    help = 'Создание тестовых данных'
+    help = "Load ingredients and tags to DB"
 
     def handle(self, *args, **options):
-        self.stdout.write('=== Создание тестовых данных ===')
+        # Загрузка ингредиентов
+        self.stdout.write("📦 Загрузка ингредиентов...")
 
-        # ПРОПУСКАЕМ создание тегов - они уже существуют
-        existing_tags = Tag.objects.all()
-        if existing_tags.exists():
-            self.stdout.write(
-                f'ℹ️  Используем существующие теги: '
-                f'{[tag.name for tag in existing_tags]}'
+        try:
+            with open(constants.INGREDIENTS_FILE_PATH,
+                      "r", encoding="utf-8") as file:
+                row_count = sum(1 for row in file)
+
+            with open(constants.INGREDIENTS_FILE_PATH,
+                      "r", encoding="utf-8") as file:
+                reader = csv.reader(file)
+                bar = IncrementalBar("ingredients.csv".ljust(17),
+                                     max=row_count)
+                next(reader)
+                for row in reader:
+                    bar.next()
+                    ingredient_create(row)
+                bar.finish()
+
+        except FileNotFoundError:
+            self.stderr.write(
+                self.style.ERROR("⚠️ Файл ingredients.csv не найден")
             )
-        else:
-            self.stdout.write(
-                self.style.WARNING(
-                    '⚠️  Теги не найдены, но не создаем новые из-за конфликтов'
-                )
+            return
+        except Exception as e:
+            self.stderr.write(
+                self.style.ERROR(f"❌ Ошибка при загрузке ингредиентов: {e}")
             )
+            return
 
-        # Проверяем существует ли таблица Recipe_ingredient
-        table_exists = ('recipes_recipeingredient'
-                        in connection.introspection.table_names())
-
-        if not table_exists:
-            self.stdout.write(
-                self.style.WARNING(
-                    '⚠️  Таблица recipes_recipeingredient не существует. '
-                    'Пропускаем создание связей рецепт-ингредиент.'
-                )
-            )
-
-        # Создаем тестовых пользователей
-        users_data = [
-            {'username': 'chef',
-             'email': 'chef@example.com',
-             'password': 'testpass123',
-             'first_name': 'Шеф',
-             'last_name': 'Поваров'},
-            {'username': 'baker',
-             'email': 'baker@example.com',
-             'password': 'testpass123',
-             'first_name': 'Пекарь',
-             'last_name': 'Булочкин'},
-        ]
-
-        for user_data in users_data:
-            user, created = User.objects.get_or_create(
-                username=user_data['username'],
-                defaults={
-                    'email': user_data['email'],
-                    'first_name': user_data['first_name'],
-                    'last_name': user_data['last_name']
-                }
-            )
-            if created:
-                user.set_password(user_data['password'])
-                user.save()
-                self.stdout.write(f'✅ Создан пользователь: {user.username}')
-            else:
-                self.stdout.write(
-                    f'ℹ️  Пользователь уже существует: {user.username}'
-                )
-
-        # Создаем тестовый рецепт
-        chef_user = User.objects.get(username='chef')
-        if not Recipe.objects.filter(name='Тестовый рецепт').exists():
-            recipe = Recipe.objects.create(
-                name='Тестовый рецепт',
-                text='Вкусный тестовый рецепт для демонстрации',
-                cooking_time=30,
-                author=chef_user
-            )
-
-            # Добавляем теги к рецепту (используем существующие)
-            try:
-                tags = Tag.objects.all()[:2]
-                if tags.exists():
-                    recipe.tags.set(tags)
-                    self.stdout.write(
-                        f'✅ Добавлены теги к рецепту: '
-                        f'{[tag.name for tag in tags]}'
-                    )
-                else:
-                    self.stdout.write(
-                        self.style.WARNING(
-                            '⚠️  Нет тегов для добавления к рецепту'
-                        )
-                    )
-            except Exception as e:
-                self.stdout.write(
-                    self.style.ERROR(f'❌ Ошибка при добавлении тегов: {e}')
-                )
-
-            # Добавляем ингредиенты к рецепту (только если таблица существует)
-            if table_exists:
-                try:
-                    from apps.recipes.models import RecipeIngredient
-                    ingredients = Ingredient.objects.all()[:3]
-                    for i, ingredient in enumerate(ingredients):
-                        RecipeIngredient.objects.create(
-                            recipe=recipe,
-                            ingredient=ingredient,
-                            amount=100 + i * 50
-                        )
-                    self.stdout.write(
-                        f'✅ Добавлены ингредиенты к рецепту: '
-                        f'{len(ingredients)} шт.'
-                    )
-                except Exception as e:
-                    self.stdout.write(
-                        self.style.ERROR(
-                            f'❌ Ошибка при добавлении ингредиентов: {e}'
-                        )
-                    )
-            else:
-                self.stdout.write(
-                    self.style.WARNING(
-                        '⚠️  Ингредиенты не добавлены (проблема с таблицей)'
-                    )
-                )
-
-            self.stdout.write(f'✅ Создан рецепт: {recipe.name}')
-        else:
-            self.stdout.write('ℹ️ Рецепт уже существует: Тестовый рецепт')
+        # Загрузка тегов
+        self.stdout.write("🏷️ Загрузка тегов...")
+        tags_count = load_tags(self)
 
         self.stdout.write(
-            self.style.SUCCESS('🎉 Тестовые данные успешно созданы')
+            self.style.SUCCESS(
+                f"[!] Успешно загружено: "
+                f"{Ingredient.objects.count()} ингредиентов, "
+                f"{tags_count} тегов"
+            )
         )
-        self.stdout.write('📊 Статистика:')
-        self.stdout.write(f'   👥 Пользователей: {User.objects.count()}')
-        self.stdout.write(f'   🥗 Ингредиентов: {Ingredient.objects.count()}')
-        self.stdout.write(f'   🏷️ Тегов: {Tag.objects.count()}')
-        self.stdout.write(f'   📝 Рецептов: {Recipe.objects.count()}')

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from config.constants import MAX_LENGHT_EMAIL, MAX_LENGHT_NAME
+from config.constants import MAX_LENGHT_EMAIL, MAX_LENGHT_FIRST_NAME
 
 
 class User(AbstractUser):
@@ -12,12 +12,12 @@ class User(AbstractUser):
         verbose_name="Email"
     )
     first_name = models.CharField(
-        max_length=MAX_LENGHT_NAME,
+        max_length=MAX_LENGHT_FIRST_NAME,
         blank=False,
         verbose_name="Имя"
     )
     last_name = models.CharField(
-        max_length=MAX_LENGHT_NAME,
+        max_length=MAX_LENGHT_FIRST_NAME,
         blank=False,
         verbose_name="Фамилия"
     )
