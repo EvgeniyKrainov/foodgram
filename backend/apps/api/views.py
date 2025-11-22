@@ -1,16 +1,5 @@
 from http import HTTPStatus
 
-from apps.api.filters import IngredientFilter, RecipeFilter
-from apps.api.pagination import FoodgramPagination
-from apps.api.permissions import IsAuthorOrReadOnly
-from apps.api.serializers import (AvatarSerializer, CustomUserCreateSerializer,
-                                  CustomUserSerializer, IngredientSerializer,
-                                  PasswordSerializer, RecipeCreateSerializer,
-                                  RecipeSerializer, ShortRecipeSerializer,
-                                  TagSerializer)
-from apps.recipes.models import (Favorite, Ingredient, Recipe, Shopping_cart,
-                                 Tag)
-from apps.users.models import Subscribe
 from django.contrib.auth import authenticate, get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -23,6 +12,18 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from apps.api.filters import IngredientFilter, RecipeFilter
+from apps.api.pagination import FoodgramPagination
+from apps.api.permissions import IsAuthorOrReadOnly
+from apps.api.serializers import (AvatarSerializer, CustomUserCreateSerializer,
+                                  CustomUserSerializer, IngredientSerializer,
+                                  PasswordSerializer, RecipeCreateSerializer,
+                                  RecipeSerializer, ShortRecipeSerializer,
+                                  TagSerializer)
+from apps.recipes.models import (Favorite, Ingredient, Recipe, Shopping_cart,
+                                 Tag)
+from apps.users.models import Subscribe
 
 User = get_user_model()
 

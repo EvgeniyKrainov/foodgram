@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
 
-from config.constants import DEFAULT_PAGE_SIZE
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
+
+from config.constants import DEFAULT_PAGE_SIZE
 
 load_dotenv()
 
@@ -74,31 +75,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
-if os.getenv('USE_SQLITE', 'False').lower() == 'true':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_NAME', 'foodgram'),
-            'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'db'),
-            'PORT': os.getenv('DB_PORT', 5432),
-        }
-    }
+# if os.getenv('USE_SQLITE', 'False').lower() == 'true':
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'NAME': os.getenv('POSTGRES_NAME', 'foodgram'),
+#             'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
+#             'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#             'HOST': os.getenv('DB_HOST', 'db'),
+#             'PORT': os.getenv('DB_PORT', 5432),
+#         }
+#     }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -188,8 +189,6 @@ DJOSER = {
     'SERIALIZERS': {
         'user_create': 'apps.api.serializers.CustomUserCreateSerializer',
         'user': 'apps.api.serializers.CustomUserSerializer',
-        'current_user': 'apps.api.serializers.CustomUserSerializer',
-        'token_create': 'djoser.serializers.TokenCreateSerializer',
     },
     'PERMISSIONS': {
         'user': ['rest_framework.permissions.IsAuthenticated'],

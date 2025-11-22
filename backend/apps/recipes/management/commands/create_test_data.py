@@ -1,7 +1,8 @@
-from apps.recipes.models import Ingredient, Recipe, Tag
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import connection
+
+from apps.recipes.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 
