@@ -11,6 +11,7 @@ from apps.recipes.models import (Favorite, Ingredient, Recipe,
                                  RecipeIngredient, ShoppingCart, Tag)
 from apps.users.models import Subscribe
 from config.constants import SAFE_METHODS
+
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django_filters.rest_framework import DjangoFilterBackend
@@ -60,10 +61,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeCreateSerializer
 
-    def perform_create(self, serializer):
-        """Сохраняет новый рецепт."""
-        serializer.save()
-
     @action(detail=True,
             methods=['get'],
             permission_classes=[AllowAny],
@@ -79,65 +76,63 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         """Добавляет/удаляет рецепт в избранное."""
         recipe = self.get_object()
+        model = Favorite
+        error_messages = {
+            'exists': 'Рецепт уже в избранном',
+            'not_found': 'Рецепт не найден в избранном'
+        }
 
         if request.method == 'POST':
-            return self._add_to_favorites(request.user, recipe)
-        return self._remove_from_favorites(request.user, recipe)
-
-    def _add_to_favorites(self, user, recipe):
-        """Добавляет рецепт в избранное."""
-        if Favorite.objects.filter(user=user, recipe=recipe).exists():
-            return Response(
-                {'error': 'Рецепт уже в избранном'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        Favorite.objects.create(user=user, recipe=recipe)
-        serializer = ShortRecipeSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def _remove_from_favorites(self, user, recipe):
-        """Удаляет рецепт из избранного."""
-        deleted_count, _ = Favorite.objects.filter(
-            user=user, recipe=recipe
-        ).delete()
-
-        if deleted_count == 0:
-            return Response(
-                {'error': 'Рецепт не найден в избранном'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            return self._add_to_collection(request.user,
+                                           recipe,
+                                           model,
+                                           error_messages)
+        return self._remove_from_collection(request.user,
+                                            recipe,
+                                            model,
+                                            error_messages)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         """Добавляет/удаляет рецепт в список покупок."""
         recipe = self.get_object()
+        model = ShoppingCart
+        error_messages = {
+            'exists': 'Рецепт уже в корзине',
+            'not_found': 'Рецепт не найден в корзине'
+        }
 
         if request.method == 'POST':
-            return self._add_to_shopping_cart(request.user, recipe)
-        return self._remove_from_shopping_cart(request.user, recipe)
+            return self._add_to_collection(request.user,
+                                           recipe,
+                                           model,
+                                           error_messages)
+        return self._remove_from_collection(request.user,
+                                            recipe,
+                                            model,
+                                            error_messages)
 
-    def _add_to_shopping_cart(self, user, recipe):
-        """Добавляет рецепт в корзину."""
-        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+    def _add_to_collection(self, user, recipe, model, error_messages):
+        """Добавляет рецепт в указанную коллекцию."""
+        if model.objects.filter(user=user, recipe=recipe).exists():
             return Response(
-                {'error': 'Рецепт уже в корзине'},
+                {'error': error_messages['exists']},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        ShoppingCart.objects.create(user=user, recipe=recipe)
+        model.objects.create(user=user, recipe=recipe)
         serializer = ShortRecipeSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def _remove_from_shopping_cart(self, user, recipe):
-        """Удаляет рецепт из корзины."""
-        deleted_count, _ = ShoppingCart.objects.filter(
+    def _remove_from_collection(self, user, recipe, model, error_messages):
+        """Удаляет рецепт из указанной коллекции."""
+        deleted_count, _ = model.objects.filter(
             user=user, recipe=recipe
         ).delete()
 
         if deleted_count == 0:
             return Response(
-                {'error': 'Рецепт не найден в корзине'},
+                {'error': error_messages['not_found']},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -182,19 +177,11 @@ class UserViewSet(DjoserUserViewSet):
     """Наследуем всю базовую функциональность от Djoser."""
 
     pagination_class = FoodgramPagination
+    permission_classes = [AllowAny]
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'],
+            permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):
-        """
-        Переопределяем метод me для корректной
-        обработки анонимных пользователей.
-        """
-
-        if not request.user.is_authenticated:
-            return Response(
-                {'detail': 'Учетные credentials не были предоставлены.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
         serializer = UserListSerializer(request.user,
                                         context={'request': request})
         return Response(serializer.data)

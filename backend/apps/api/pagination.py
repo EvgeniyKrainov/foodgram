@@ -1,4 +1,5 @@
 from config.constants import DEFAULT_PAGE_SIZE
+
 from rest_framework.pagination import PageNumberPagination
 
 

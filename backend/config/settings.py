@@ -36,11 +36,11 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
+    'drf_yasg',
 
     'apps.users.apps.UsersConfig',
     'apps.recipes.apps.RecipesConfig',
     'apps.api.apps.ApiConfig',
-    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -74,7 +74,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
 
 if os.getenv('USE_SQLITE', 'False').lower() == 'true':
     DATABASES = {
@@ -208,16 +207,12 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'USER_CREATE_PASSWORD_RETYPE': False,
     'SERIALIZERS': {
-        'user_create': 'djoser.serializers.UserCreateSerializer',
         'user': 'apps.api.serializers.UserListSerializer',
         'current_user': 'apps.api.serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        'user': ['rest_framework.permissions.AllowAny'],
+        'user': ['rest_framework.permissions.IsAuthenticated'],
         'user_list': ['rest_framework.permissions.AllowAny'],
-        'user_delete': ['rest_framework.permissions.IsAuthenticated'],
-        'set_username': ['rest_framework.permissions.IsAuthenticated'],
-        'current_user': ['rest_framework.permissions.IsAuthenticated'],
     },
     'HIDE_USERS': False,
 }
