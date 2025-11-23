@@ -145,11 +145,18 @@ SWAGGER_SETTINGS = {
         'Token': {
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
+            'in': 'header',
+            'description': 'Введите токен в формате: Token ваш_токен'
         }
     },
     'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'DEFAULT_INFO': 'config.urls.schema_view',
+    'VALIDATOR_URL': None,
 }
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
 
 REDOC_SETTINGS = {
     'LAZY_RENDERING': False,
@@ -167,6 +174,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': [
         'rest_framework.pagination.PageNumberPagination',
     ],
+
     'PAGE_SIZE': DEFAULT_PAGE_SIZE,
 }
 
