@@ -170,6 +170,7 @@ class ShoppingCart(models.Model):
         verbose_name = "Корзина"
         verbose_name_plural = "Корзина"
         default_related_name = "shopping_carts"
+        db_table = "recipes_shoppingcart"
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "recipe"], name="unique_shopping_cart"
