@@ -1,5 +1,4 @@
 from apps.users.models import User
-
 from config.constants import (MAX_AMOUNT, MAX_COOKING_TIME, MAX_LENGHT_NAME,
                               MAX_LENGHT_SLUG, MIN_AMOUNT, MIN_COOKING_TIME)
 

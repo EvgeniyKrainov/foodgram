@@ -4,6 +4,7 @@ import os
 
 from apps.recipes.models import Ingredient, Tag
 from config import settings
+
 from django.core.management.base import BaseCommand
 
 
