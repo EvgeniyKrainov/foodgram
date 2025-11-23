@@ -2,9 +2,10 @@ import csv
 import json
 import os
 
+from django.core.management.base import BaseCommand
+
 from apps.recipes.models import Ingredient, Tag
 from config import settings
-from django.core.management.base import BaseCommand
 
 
 def ingredient_create(row):

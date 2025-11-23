@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
 
-from config.constants import DEFAULT_PAGE_SIZE
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
+
+from config.constants import DEFAULT_PAGE_SIZE
 
 load_dotenv()
 
@@ -75,6 +76,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+
 if os.getenv('USE_SQLITE', 'False').lower() == 'true':
     DATABASES = {
         'default': {
@@ -128,7 +130,12 @@ USE_I18N = True
 USE_TZ = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT',
+                                'True').lower() == 'true'
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
@@ -154,10 +161,6 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'config.urls.schema_view',
     'VALIDATOR_URL': None,
 }
-
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT',
-                                'True').lower() == 'true'
 
 REDOC_SETTINGS = {
     'LAZY_RENDERING': False,
