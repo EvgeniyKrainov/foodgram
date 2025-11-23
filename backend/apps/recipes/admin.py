@@ -1,8 +1,7 @@
+from config.constants import DEFAULT_EXTRA_FORMS, MIN_REQUIRED_FORMS
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.forms import BaseInlineFormSet
-
-from config.constants import DEFAULT_EXTRA_FORMS, MIN_REQUIRED_FORMS
 
 from . import models
 

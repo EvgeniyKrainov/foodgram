@@ -1,9 +1,8 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
-
 from apps.users.models import User
 from config.constants import (MAX_AMOUNT, MAX_COOKING_TIME, MAX_LENGHT_NAME,
                               MAX_LENGHT_SLUG, MIN_AMOUNT, MIN_COOKING_TIME)
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 
 class Ingredient(models.Model):

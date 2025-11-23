@@ -1,15 +1,5 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
-from django.db.models import F, Sum
-from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
-from rest_framework.response import Response
-
 from apps.api.filters import IngredientFilter, RecipeFilter
 from apps.api.pagination import FoodgramPagination
 from apps.api.permissions import IsAuthorOrReadOnly
@@ -21,6 +11,15 @@ from apps.recipes.models import (Favorite, Ingredient, Recipe,
                                  RecipeIngredient, ShoppingCart, Tag)
 from apps.users.models import Subscribe
 from config.constants import SAFE_METHODS
+from django.contrib.auth import get_user_model
+from django.db.models import F, Sum
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet as DjoserUserViewSet
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
 
 User = get_user_model()
 
