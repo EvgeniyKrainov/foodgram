@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 
-from config.constants import DEFAULT_PAGE_SIZE
-
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
+
+from config.constants import DEFAULT_PAGE_SIZE
 
 load_dotenv()
 

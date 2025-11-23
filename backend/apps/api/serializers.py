@@ -1,11 +1,15 @@
-from apps.recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
-from config.constants import (MAX_AMOUNT, MAX_COOKING_TIME, MIN_AMOUNT,
-                              MIN_COOKING_TIME)
-
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
+
+from apps.recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from config.constants import (
+    MAX_AMOUNT,
+    MAX_COOKING_TIME,
+    MIN_AMOUNT,
+    MIN_COOKING_TIME,
+)
 
 User = get_user_model()
 
