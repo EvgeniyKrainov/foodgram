@@ -5,13 +5,13 @@ from apps.users.models import User
 from config.constants import (
     MAX_AMOUNT,
     MAX_COOKING_TIME,
+    MAX_LENGHT_MEAS_INGR,
     MAX_LENGHT_NAME_INGR,
     MAX_LENGHT_NAME_REC,
     MAX_LENGHT_NAME_TAG,
     MAX_LENGHT_SLUG,
     MIN_AMOUNT,
     MIN_COOKING_TIME,
-    MAX_LENGHT_MEAS_INGR,
 )
 
 
