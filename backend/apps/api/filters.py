@@ -5,13 +5,15 @@ from django_filters.rest_framework import (
     filters,
 )
 
-from apps.recipes.models import Ingredient, Recipe
+from apps.recipes.models import Ingredient, Recipe, Tag
 
 
 class RecipeFilter(FilterSet):
 
-    tags = AllValuesMultipleFilter(
+    tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all(),
         label='Tags'
     )
     is_favorited = filters.BooleanFilter(
