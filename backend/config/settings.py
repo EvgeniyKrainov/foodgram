@@ -176,6 +176,10 @@ REST_FRAMEWORK = {
 
     'DEFAULT_PAGINATION_CLASS': 'apps.api.pagination.FoodgramPagination',
     'PAGE_SIZE': DEFAULT_PAGE_SIZE,
+
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
 }
 
 LOGGING = {
