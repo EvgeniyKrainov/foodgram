@@ -5,17 +5,20 @@ from apps.users.models import User
 from config.constants import (
     MAX_AMOUNT,
     MAX_COOKING_TIME,
-    MAX_LENGHT_NAME,
+    MAX_LENGHT_NAME_INGR,
+    MAX_LENGHT_NAME_REC,
+    MAX_LENGHT_NAME_TAG,
     MAX_LENGHT_SLUG,
     MIN_AMOUNT,
     MIN_COOKING_TIME,
+
 )
 
 
 class Ingredient(models.Model):
-    name = models.CharField("Название", max_length=MAX_LENGHT_NAME)
+    name = models.CharField("Название", max_length=MAX_LENGHT_NAME_INGR)
     measurement_unit = models.CharField("Единица измерения",
-                                        max_length=MAX_LENGHT_NAME)
+                                        max_length=MAX_LENGHT_NAME_INGR)
 
     class Meta:
         ordering = ["name"]
@@ -33,7 +36,7 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField("Название", max_length=MAX_LENGHT_NAME)
+    name = models.CharField("Название", max_length=MAX_LENGHT_NAME_TAG)
     slug = models.SlugField(
         "Уникальный слаг", max_length=MAX_LENGHT_SLUG, unique=True, null=True
     )
@@ -48,7 +51,7 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    name = models.CharField("Название", max_length=MAX_LENGHT_NAME)
+    name = models.CharField("Название", max_length=MAX_LENGHT_NAME_REC)
     text = models.TextField("Описание")
     cooking_time = models.PositiveSmallIntegerField(
         "Время приготовления, мин",
