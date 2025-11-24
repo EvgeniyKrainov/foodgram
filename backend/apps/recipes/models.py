@@ -11,7 +11,6 @@ from config.constants import (
     MAX_LENGHT_SLUG,
     MIN_AMOUNT,
     MIN_COOKING_TIME,
-
 )
 
 
