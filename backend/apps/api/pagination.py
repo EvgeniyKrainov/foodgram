@@ -9,7 +9,6 @@ class FoodgramPagination(PageNumberPagination):
     page_size_query_param = 'limit'
     max_page_size = MAX_PAGE_SIZE
 
-
     def get_paginated_response(self, data):
         return Response({
             'count': self.page.paginator.count,
