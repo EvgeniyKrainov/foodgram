@@ -11,13 +11,14 @@ from config.constants import (
     MAX_LENGHT_SLUG,
     MIN_AMOUNT,
     MIN_COOKING_TIME,
+    MAX_LENGHT_MEAS_INGR,
 )
 
 
 class Ingredient(models.Model):
     name = models.CharField("Название", max_length=MAX_LENGHT_NAME_INGR)
     measurement_unit = models.CharField("Единица измерения",
-                                        max_length=MAX_LENGHT_NAME_INGR)
+                                        max_length=MAX_LENGHT_MEAS_INGR)
 
     class Meta:
         ordering = ["name"]
